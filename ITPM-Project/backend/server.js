@@ -4,9 +4,18 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
-
+const dotenv = require("dotenv");
 // Import routes
 const resourceRoutes = require('./routes/resourceRoutes');
+
+
+
+
+
+dotenv.config({ path: path.join(__dirname, ".env") });
+
+const connectDB = require("./config/db");
+const lectureSummaryRoutes = require("./routes/lectureSummaryRoutes");
 
 const app = express();
 const port = process.env.PORT || 5003;
@@ -39,7 +48,8 @@ const upload = multer({
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // Serve static files from uploads directory
 app.use('/uploads', express.static('uploads'));
@@ -75,4 +85,38 @@ mongoose.connect('mongodb+srv://admin:2003511@cluster1.fmllswt.mongodb.net/itpmD
 .catch((error) => {
   console.error("MongoDB connection failed:", error.message);
   process.exit(1);
+=======
+app.get("/api/health", (_req, res) => {
+  res.json({ ok: true });
 });
+
+app.use("/api/lecture-summary", lectureSummaryRoutes);
+
+app.use((err, _req, res, _next) => {
+  console.error(err);
+
+  if (err?.name === "MulterError") {
+    return res.status(400).json({ ok: false, message: err.message });
+  }
+
+  if (/Only PDF and PPTX files are supported/i.test(err.message || "")) {
+    return res.status(400).json({ ok: false, message: err.message });
+  }
+
+  res.status(500).json({ ok: false, message: err.message });
+});
+
+async function start() {
+  await connectDB();
+  app.listen(port, () => console.log(`Server running on ${port}`));
+}
+
+if (require.main === module) {
+  start().catch((error) => {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  });
+}
+
+module.exports = { app, start };
+
