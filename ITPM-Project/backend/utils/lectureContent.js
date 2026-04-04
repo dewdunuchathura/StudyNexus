@@ -1,5 +1,5 @@
-﻿const SUPPORTED_TYPES = ["PDF"];
-const supportedExtensions = new Set(["pdf"]);
+const SUPPORTED_TYPES = ["PDF", "PPTX"];
+const supportedExtensions = new Set(["pdf", "pptx"]);
 const maxFileSizeBytes = 15 * 1024 * 1024;
 
 function formatFileSize(bytes) {
@@ -33,7 +33,7 @@ function validateLectureFile(file) {
 
   const extension = getExtension(file.name || "");
   if (!supportedExtensions.has(extension)) {
-    return "Only PDF files are supported right now.";
+    return "Only PDF and PPTX files are supported right now.";
   }
 
   if (file.size > maxFileSizeBytes) {

@@ -28,7 +28,7 @@ app.use((err, _req, res, _next) => {
     return res.status(400).json({ ok: false, message: err.message });
   }
 
-  if (/Only PDF files are supported/i.test(err.message || "")) {
+  if (/Only PDF and PPTX files are supported/i.test(err.message || "")) {
     return res.status(400).json({ ok: false, message: err.message });
   }
 
@@ -48,3 +48,4 @@ if (require.main === module) {
 }
 
 module.exports = { app, start };
+

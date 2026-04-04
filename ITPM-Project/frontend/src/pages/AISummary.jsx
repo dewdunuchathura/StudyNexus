@@ -4,6 +4,77 @@ import SummaryShell from "../components/SummaryShell.jsx";
 import { supportedTypes, formatFileSize } from "../lib/lectureSummary.js";
 import { useLectureSummary } from "../context/LectureSummaryContext.jsx";
 
+const STYLES = `
+  .ai-quick-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 0.25rem;
+  }
+
+  .ai-quick-link {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 13px 16px;
+    border-radius: 12px;
+    background: var(--blue-25);
+    border: 1px solid var(--blue-100);
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.2s;
+  }
+
+  .ai-quick-link:hover {
+    border-color: var(--blue-300);
+    background: var(--blue-50);
+    box-shadow: 0 4px 14px rgba(37,99,235,0.08);
+    transform: translateX(3px);
+  }
+
+  .ai-quick-num {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue-500), var(--blue-700));
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.28);
+    flex-shrink: 0;
+  }
+
+  .ai-quick-text strong {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+
+  .ai-quick-text span {
+    font-size: 11.5px;
+    color: var(--ink-35);
+    font-weight: 300;
+  }
+
+  .ai-quick-arrow {
+    margin-left: auto;
+    font-size: 14px;
+    color: var(--blue-400);
+    flex-shrink: 0;
+  }
+`;
+
+const QUICK_LINKS = [
+  { to: "/summary",        label: "Summary",        desc: "Key takeaways from the lecture" },
+  { to: "/revision-notes", label: "Revision Notes",  desc: "Notes to review before your exam" },
+  { to: "/questions",      label: "Questions",       desc: "Practice questions to test yourself" },
+];
+
 function AISummary() {
   const fileInputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
@@ -79,6 +150,8 @@ function AISummary() {
 
   return (
     <SummaryShell note="This page is the entry point. Upload the lecture file here, then open the Summary, Revision Notes, or Questions page from the links below.">
+      <style>{STYLES}</style>
+
       <header className="summary-header">
         <div className="brand">
           <div className="brand-mark">AI</div>
@@ -108,6 +181,7 @@ function AISummary() {
       </header>
 
       <main className="summary-page">
+        {/* -- Hero -- */}
         <section className="hero-card">
           <div className="ring" />
           <div className="ring2" />
@@ -146,6 +220,7 @@ function AISummary() {
           </div>
         </section>
 
+        {/* -- Uploaded file -- */}
         {visibleDocument && (
           <section className="stack-card">
             <div className="section-title">
@@ -164,21 +239,19 @@ function AISummary() {
           </section>
         )}
 
+        {/* -- Upload + Quick links -- */}
         <section className="dashboard-grid">
           <article
             className={`upload-card ${dragOver ? "is-dragging" : ""}`}
             onClick={openFilePicker}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragOver(true);
-            }}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}
           >
             <div className="upload-icon">+</div>
             <h2>Drop or choose a file</h2>
             <p>
-              Upload a PDF, PPT, PPTX, DOC, or DOCX file. The backend will generate the study content from it.
+              Upload a PDF or PPTX file. The backend will generate the study content from it.
             </p>
             <div className="file-format-row">
               {supportedTypes.map((type) => (
@@ -190,10 +263,7 @@ function AISummary() {
             <button
               type="button"
               className="primary-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                openFilePicker();
-              }}
+              onClick={(e) => { e.stopPropagation(); openFilePicker(); }}
               disabled={isUploading}
             >
               {isUploading ? "Uploading..." : "Choose file"}
@@ -211,17 +281,18 @@ function AISummary() {
               <p>Quick links</p>
               <span>Open the generated pages</span>
             </div>
-            <div className="result-actions" style={{ flexDirection: "column", alignItems: "flex-start", gap: "0.75rem" }}>
-              <Link className="primary-btn" to="/summary" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
-                Summary
-              </Link>
-              <Link className="primary-btn" to="/revision-notes" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
-                Revision notes
-              </Link>
-              <Link className="primary-btn" to="/questions" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
-                Questions
-              </Link>
-            </div>
+            <nav className="ai-quick-list">
+              {QUICK_LINKS.map(({ to, label, desc }, i) => (
+                <Link key={to} className="ai-quick-link" to={to}>
+                  <div className="ai-quick-num">{i + 1}</div>
+                  <div className="ai-quick-text">
+                    <strong>{label}</strong>
+                    <span>{desc}</span>
+                  </div>
+                  <span className="ai-quick-arrow">?</span>
+                </Link>
+              ))}
+            </nav>
           </article>
         </section>
       </main>
@@ -230,4 +301,3 @@ function AISummary() {
 }
 
 export default AISummary;
-

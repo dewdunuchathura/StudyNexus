@@ -1,6 +1,6 @@
-﻿export const supportedTypes = ["PDF", "PPT", "PPTX", "DOC", "DOCX"];
+export const supportedTypes = ["PDF", "PPTX"];
 
-const supportedExtensions = new Set(["pdf", "ppt", "pptx", "doc", "docx"]);
+const supportedExtensions = new Set(["pdf", "pptx"]);
 const maxFileSizeBytes = 15 * 1024 * 1024;
 
 export function formatFileSize(bytes) {
@@ -21,9 +21,9 @@ export function validateLectureFile(file) {
 
   if (!supportedExtensions.has(extension)) {
     if (isImageFile) {
-      return "Images are not supported. Please upload a PDF, PPT, PPTX, DOC, or DOCX file.";
+      return "Images are not supported. Please upload a PDF or PPTX file.";
     }
-    return "Unsupported file type. Please upload a PDF, PPT, PPTX, DOC, or DOCX file.";
+    return "Unsupported file type. Please upload a PDF or PPTX file.";
   }
 
   if (file.size > maxFileSizeBytes) {

@@ -66,29 +66,43 @@ function normalizeList(value) {
 
 function deriveStudyContent(record) {
   const sourceContent = record?.content && typeof record.content === "object" ? record.content : {};
-  const summaryFromApi = normalizeList(sourceContent.summary);
-  const keyPointsFromApi = normalizeList(sourceContent.keyPoints);
-  const conceptsFromApi = normalizeList(sourceContent.concepts);
+  const summaryFromApi       = normalizeList(sourceContent.summary);
+  const keyPointsFromApi     = normalizeList(sourceContent.keyPoints);
+  const conceptsFromApi      = normalizeList(sourceContent.concepts);
   const revisionNotesFromApi = normalizeList(sourceContent.revisionNotes);
-  const questionsFromApi = normalizeList(sourceContent.questions);
+  const questionsFromApi     = normalizeList(sourceContent.questions);
+  // NEW: answers — one per question, same order
+  const answersFromApi       = normalizeList(sourceContent.answers);
 
-  const fallbackSource = record?.summary || record?.originalText || record?.document?.name || "";
+  const fallbackSource  = record?.summary || record?.originalText || record?.document?.name || "";
   const fallbackBullets = splitSentences(fallbackSource, 4);
-  const fallbackSummary = fallbackBullets.length > 0 ? fallbackBullets : ["Upload a lecture file to generate study content."];
+  const fallbackSummary = fallbackBullets.length > 0
+    ? fallbackBullets
+    : ["Upload a lecture file to generate study content."];
   const fallbackQuestions = fallbackSummary.map((item) => `What does this mean in the lecture? ${item}`);
+  const fallbackAnswers   = fallbackQuestions.map(() => "Upload a lecture file to generate answers.");
+
+  const finalQuestions = questionsFromApi.length > 0 ? questionsFromApi : fallbackQuestions;
+
+  // Align answers with questions: pad with a fallback string if Gemini returned fewer answers
+  const rawAnswers = answersFromApi.length > 0 ? answersFromApi : fallbackAnswers;
+  const alignedAnswers = finalQuestions.map(
+    (_, i) => rawAnswers[i] || "Refer to the lecture material for a full explanation of this topic."
+  );
 
   return {
-    summary: summaryFromApi.length > 0 ? summaryFromApi : fallbackSummary,
-    keyPoints: keyPointsFromApi.length > 0 ? keyPointsFromApi : fallbackSummary,
-    concepts: conceptsFromApi.length > 0 ? conceptsFromApi : fallbackSummary.map((item) => item.split(" ").slice(0, 4).join(" ")).filter(Boolean),
+    summary:       summaryFromApi.length > 0       ? summaryFromApi       : fallbackSummary,
+    keyPoints:     keyPointsFromApi.length > 0     ? keyPointsFromApi     : fallbackSummary,
+    concepts:      conceptsFromApi.length > 0      ? conceptsFromApi      : fallbackSummary.map((item) => item.split(" ").slice(0, 4).join(" ")).filter(Boolean),
     revisionNotes: revisionNotesFromApi.length > 0 ? revisionNotesFromApi : fallbackSummary,
-    questions: questionsFromApi.length > 0 ? questionsFromApi : fallbackQuestions,
+    questions:     finalQuestions,
+    answers:       alignedAnswers,
   };
 }
 
 export function LectureSummaryProvider({ children }) {
   const [summaryRecord, setSummaryRecord] = useState(() => readStoredRecord());
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [isHydrated, setIsHydrated]       = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -128,10 +142,10 @@ export function LectureSummaryProvider({ children }) {
         try {
           const fileData = await readFileAsBase64(file);
           const response = await uploadLectureSummary({
-            fileName: file.name,
+            fileName:    file.name,
             sizeInBytes: file.size,
-            mimeType: file.type,
-            uploadedAt: new Date(file.lastModified).toISOString(),
+            mimeType:    file.type,
+            uploadedAt:  new Date(file.lastModified).toISOString(),
             fileData,
           });
           setSummaryRecord(response?.data || null);

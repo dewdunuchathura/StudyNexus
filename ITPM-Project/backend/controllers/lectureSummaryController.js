@@ -1,6 +1,6 @@
-﻿const crypto = require("crypto");
+const crypto = require("crypto");
 const LectureSummary = require("../models/LectureSummary");
-const { extractPDFText } = require("../utils/pdfExtractor");
+const { extractLectureText } = require("../utils/pdfExtractor");
 const { generateFromText, isStudyContentValid } = require("../utils/geminiSummary");
 const { validateLectureFile, getExtension, formatFileSize } = require("../utils/lectureContent");
 
@@ -148,7 +148,7 @@ async function uploadLectureSummary(req, res) {
 
     const file = getFileFromRequest(req);
     if (!file) {
-      return res.status(400).json({ ok: false, message: "A PDF file is required. Send fileData and fileName." });
+      return res.status(400).json({ ok: false, message: "A PDF or PPTX file is required. Send fileData and fileName." });
     }
 
     if (!req.body?.fileName && !req.file?.originalname) {
@@ -165,7 +165,7 @@ async function uploadLectureSummary(req, res) {
     }
 
     console.log("Extracting...");
-    const originalText = await extractPDFText(file.buffer);
+    const originalText = await extractLectureText(file.buffer, file.fileName);
     console.log("Extracted text length:", originalText.length);
     console.log("EXTRACTED TEXT PREVIEW:", originalText.slice(0, 300));
 
@@ -195,7 +195,7 @@ async function uploadLectureSummary(req, res) {
     return res.status(201).json({ ok: true, data: buildPayload(savedRecord), reused: false });
   } catch (err) {
     console.error("Upload failed:", err);
-    const status = /fileName is required|A PDF file is required|Only PDF files are supported|No text could be extracted/i.test(
+    const status = /fileName is required|A PDF or PPTX file is required|Only PDF and PPTX files are supported|No text could be extracted/i.test(
       err.message
     )
       ? 400
@@ -264,6 +264,8 @@ module.exports = {
   getCurrentLectureSummary,
   clearCurrentLectureSummary,
 };
+
+
 
 
 

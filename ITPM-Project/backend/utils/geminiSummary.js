@@ -51,6 +51,8 @@ function normalizeContent(content) {
     concepts: normalizeList(content.concepts),
     revisionNotes: normalizeList(content.revisionNotes),
     questions: normalizeQuestionList(content.questions),
+    // answers must match questions array length and order
+    answers: normalizeList(content.answers),
   };
 }
 
@@ -127,17 +129,37 @@ function buildFallbackContent(text, fileName) {
   const summary = summaryParagraphs.length > 0 ? summaryParagraphs : [cleanOutput(String(text || ""))].filter(Boolean);
   const keyPoints = summarySentences.slice(0, 8).map((sentence) => cleanOutput(sentence)).filter(Boolean);
   const concepts = keyPoints.map((point) => compressToConcept(point)).filter(Boolean);
-  const revisionNotes = splitIntoParagraphs(text, 3, 8);
+
+  // Detailed revision notes: group sentences into full multi-sentence notes
+  const revisionNotes = splitIntoParagraphs(text, 3, 8).map((note) => {
+    const cleaned = cleanOutput(note);
+    if (!cleaned) return "";
+    const leadIn = /^(revision|note|study|remember|important|key point)/i.test(cleaned)
+      ? cleaned
+      : `Key concept: ${cleaned}`;
+    return leadIn.length > 360 ? `${leadIn.slice(0, 357)}...` : leadIn;
+  }).filter(Boolean);
+
   const questions = concepts.length > 0
     ? concepts.slice(0, 8).map((concept) => `Explain ${concept}.`)
     : keyPoints.slice(0, 8).map((point) => `Explain the significance of ${compressToConcept(point) || "this topic"}.`);
+
+  // Fallback answers: derive a brief answer sentence from each corresponding key point
+  const answers = questions.map((question, i) => {
+    const source = keyPoints[i] || summarySentences[i] || "";
+    const cleaned = cleanOutput(source);
+    return cleaned
+      ? `${cleaned.charAt(0).toUpperCase()}${cleaned.slice(1)}`
+      : "Refer to the lecture content for a detailed explanation of this topic.";
+  });
 
   return {
     summary,
     keyPoints: keyPoints.length > 0 ? keyPoints : summary,
     concepts: concepts.length > 0 ? concepts : summary.map((item) => compressToConcept(item)).filter(Boolean),
     revisionNotes: revisionNotes.length > 0 ? revisionNotes : summary,
-    questions: questions.length > 0 ? questions : [fileName ? `What are the key ideas covered in ${fileName}?` : "What are the key ideas covered in this lecture?"],
+    questions,
+    answers,
   };
 }
 
@@ -146,7 +168,10 @@ function buildExtendedRevisionNotes(content, lectureText, summaryItems = []) {
   const apiSummary = finalizeList(content.summary);
   const summaryText = summaryItems.length > 0 ? summaryItems.join(" ") : apiSummary.join(" ");
 
-  const apiLooksLongEnough = apiRevisionNotes.some((item) => item.length >= 120) || apiRevisionNotes.join(" ").length >= 400;
+  // Accept notes that are already detailed enough (avg 100+ chars each)
+  const avgLength = apiRevisionNotes.reduce((sum, n) => sum + n.length, 0) / (apiRevisionNotes.length || 1);
+  const apiLooksLongEnough = avgLength >= 100 || apiRevisionNotes.join(" ").length >= 600;
+
   if (apiLooksLongEnough) {
     return apiRevisionNotes;
   }
@@ -159,11 +184,13 @@ function buildExtendedRevisionNotes(content, lectureText, summaryItems = []) {
     .map((item) => {
       const text = cleanOutput(item);
       if (!text) return "";
-      const leadIn = /^(revision|note|study|remember|important|key point)/i.test(text) ? text : `Study note: ${text}`;
+      const leadIn = /^(revision|note|study|remember|important|key point)/i.test(text)
+        ? text
+        : `Key concept: ${text}`;
       return leadIn.length > 360 ? `${leadIn.slice(0, 357)}...` : leadIn;
     })
     .filter(Boolean)
-    .slice(0, 8);
+    .slice(0, 10);
 }
 
 function normalizeQuestions(questions = [], lectureText = "") {
@@ -173,12 +200,37 @@ function normalizeQuestions(questions = [], lectureText = "") {
     .filter((question) => !/file|pdf|page\s*\d+|lecture|faculty|department|university/i.test(question));
 
   if (cleanedQuestions.length > 0) {
-    return cleanedQuestions.slice(0, 8);
+    return cleanedQuestions.slice(0, 10);
   }
 
   return splitSentences(lectureText, 8)
     .map((item) => `Explain ${compressToConcept(item) || "the concept"}.`)
     .filter(Boolean);
+}
+
+function normalizeAnswers(answers = [], questions = [], lectureText = "") {
+  const cleaned = finalizeList(answers).map((a) => {
+    const text = cleanOutput(a);
+    return text.length > 500 ? `${text.slice(0, 497)}...` : text;
+  });
+
+  // If Gemini returned answers, align them with questions (pad if needed)
+  if (cleaned.length > 0) {
+    const aligned = questions.map((_, i) =>
+      cleaned[i] || "Refer to the lecture material for a full explanation of this topic."
+    );
+    return aligned;
+  }
+
+  // No answers from Gemini — derive from lecture text as fallback
+  const sentences = splitSentences(lectureText, questions.length * 2);
+  return questions.map((_, i) => {
+    const s = sentences[i * 2] || sentences[i] || "";
+    const text = cleanOutput(s);
+    return text
+      ? `${text.charAt(0).toUpperCase()}${text.slice(1)}`
+      : "Refer to the lecture material for a full explanation of this topic.";
+  });
 }
 
 function isStudyContentValid(content) {
@@ -193,6 +245,9 @@ function isStudyContentValid(content) {
   const hasSummaryParagraph = summary.some((item) => cleanOutput(item).length >= 80 && /[.!?]/.test(cleanOutput(item)));
   const hasValidQuestions = questions.every((item) => !/file|pdf|page\s*\d+|lecture|faculty|department|university/i.test(cleanOutput(item)));
 
+  // Revision notes must have substance: at least some notes 80+ chars
+  const hasDetailedNotes = revisionNotes.some((item) => cleanOutput(item).length >= 80);
+
   return (
     summary.length > 0 &&
     keyPoints.length >= 4 &&
@@ -200,7 +255,8 @@ function isStudyContentValid(content) {
     revisionNotes.length > 0 &&
     questions.length >= 5 &&
     hasSummaryParagraph &&
-    hasValidQuestions
+    hasValidQuestions &&
+    hasDetailedNotes
   );
 }
 
@@ -218,14 +274,15 @@ const OUTPUT_SCHEMA = {
     keyPoints: { type: "array", items: { type: "string" } },
     concepts: { type: "array", items: { type: "string" } },
     revisionNotes: {
-      anyOf: [
-        { type: "string" },
-        { type: "array", items: { type: "string" } },
-      ],
+      // Always an array of detailed strings now
+      type: "array",
+      items: { type: "string" },
     },
     questions: { type: "array", items: { type: "string" } },
+    // NEW: one answer per question, same order
+    answers: { type: "array", items: { type: "string" } },
   },
-  required: ["summary", "keyPoints", "concepts", "revisionNotes", "questions"],
+  required: ["summary", "keyPoints", "concepts", "revisionNotes", "questions", "answers"],
   additionalProperties: false,
 };
 
@@ -254,7 +311,7 @@ async function callGemini(lectureText, prompt) {
           responseMimeType: "application/json",
           responseJsonSchema: OUTPUT_SCHEMA,
           temperature: 0.2,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 4096,
         },
       }),
     }
@@ -292,12 +349,15 @@ async function callGemini(lectureText, prompt) {
 
   try {
     const content = normalizeContent(parsedResult.value);
+    const finalQuestions = normalizeQuestions(content.questions, lectureText);
+
     const cleanedContent = {
       summary: finalizeList(content.summary),
       keyPoints: finalizeList(content.keyPoints),
       concepts: finalizeList(content.concepts),
       revisionNotes: buildExtendedRevisionNotes(content, lectureText, content.summary),
-      questions: normalizeQuestions(content.questions, lectureText),
+      questions: finalQuestions,
+      answers: normalizeAnswers(content.answers, finalQuestions, lectureText),
     };
 
     console.log("FINAL CLEANED OUTPUT:", JSON.stringify(cleanedContent).slice(0, 2000));
@@ -315,7 +375,7 @@ async function generateFromText(text, fileName) {
   }
 
   const prompt = [
-    "You are a professional lecturer generating CLEAN academic study material.",
+    "You are a professional lecturer generating CLEAN, DETAILED academic study material.",
     "",
     "ABSOLUTE RULES (MUST FOLLOW):",
     "- NEVER include lecturer names",
@@ -324,7 +384,7 @@ async function generateFromText(text, fileName) {
     "- NEVER include 'Lecture', 'Faculty', 'Department'",
     "- NEVER include slide titles like 'Outline'",
     "- NEVER include symbols like ●, ---, etc.",
-    "- NEVER copy raw text",
+    "- NEVER copy raw text verbatim",
     "",
     "- You MUST rewrite everything in clean, natural English",
     "- You MUST explain concepts clearly like teaching a student",
@@ -332,17 +392,29 @@ async function generateFromText(text, fileName) {
     "",
     "OUTPUT STRICT JSON ONLY:",
     "{",
-    '  "summary": "A detailed explanation in paragraph form (minimum 300 words, clean and readable)",',
-    '  "keyPoints": ["At least 8 clean academic points"],',
-    '  "concepts": ["Concept name - simple explanation"],',
-    '  "revisionNotes": "Structured notes for studying (clear and organized)",',
-    '  "questions": ["5-10 exam-style questions (NO file references)"]',
+    '  "summary": ["3-5 paragraph-length strings summarising the lecture clearly (min 60 words each)"],',
+    '  "keyPoints": ["At least 8 clean, specific academic key points (one idea per item)"],',
+    '  "concepts": ["Concept name — one-line simple explanation (e.g. \'Recursion — a function that calls itself\')"],',
+    '  "revisionNotes": [',
+    '    "8-12 detailed study notes.",',
+    '    "Each note MUST be 2-4 full sentences long.",',
+    '    "Each note MUST explain WHY the concept matters, not just what it is.",',
+    '    "Written as if a lecturer is teaching a student directly.",',
+    '    "Do NOT use one-liners or bullet fragments."',
+    '  ],',
+    '  "questions": ["6-10 exam-style questions that test understanding (not recall). End each with ?."],',
+    '  "answers": [',
+    '    "A thorough 2-4 sentence answer for EACH question above.",',
+    '    "Same order and same count as the questions array.",',
+    '    "Each answer must explain the concept fully, not just repeat the question."',
+    '  ]',
     "}",
     "",
     "IMPORTANT:",
+    "- answers array must have exactly the same number of items as questions",
     "- If input contains names or metadata → IGNORE them",
     "- If input is messy → CLEAN and REWRITE it",
-    "- Output must look like written by a human lecturer",
+    "- Output must read like it was written by a human lecturer",
     "- No symbols, no garbage, no repeated phrases",
     "",
     "Lecture content:",
@@ -355,7 +427,7 @@ async function generateFromText(text, fileName) {
     console.warn("Gemini output failed validation, regenerating once...");
     result = await callGemini(
       lectureText,
-      `${prompt}\n\nIMPORTANT: The previous output was invalid. Return only clean JSON with no names, no file references, no lecture metadata, and no raw copied text.`
+      `${prompt}\n\nIMPORTANT: The previous output was invalid. Return only clean JSON with no names, no file references, no lecture metadata, and no raw copied text. Revision notes must each be 2-4 sentences. Answers must match questions count exactly.`
     );
   }
 

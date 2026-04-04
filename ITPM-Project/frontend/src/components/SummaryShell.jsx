@@ -429,7 +429,7 @@ export const SUMMARY_STYLES = `
   .section-title { margin-bottom: 1.3rem; }
 
   .section-title p {
-    font-family: 'Playfair Display', serif; font-size: 1.08rem; font-weight: 600;
+    font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 600;
     color: var(--ink); margin-bottom: 3px; letter-spacing: 0.01em;
   }
 
@@ -439,7 +439,7 @@ export const SUMMARY_STYLES = `
 
   .bullet-list li {
     position: relative; padding-left: 18px;
-    font-size: 13.5px; color: var(--ink-80); line-height: 1.68; font-weight: 300;
+    font-size: 15px; color: var(--ink-80); line-height: 1.8; font-weight: 400;
     white-space: normal;
     word-break: break-word;
     overflow-wrap: anywhere;
@@ -452,7 +452,7 @@ export const SUMMARY_STYLES = `
     border-radius: 1px;
   }
 
-  .bullet-list.compact li { font-size: 13px; }
+  .bullet-list.compact li { font-size: 14px; }
 
   .note-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 
@@ -486,7 +486,7 @@ export const SUMMARY_STYLES = `
     background: rgba(59,130,246,0.10); border: 1px solid rgba(59,130,246,0.22); margin-top: 1px;
   }
 
-  .question-card p { font-size: 13.5px; color: var(--ink-80); line-height: 1.62; font-weight: 300; }
+  .question-card p { font-size: 15px; color: var(--ink-80); line-height: 1.75; font-weight: 400; }
 
   .empty-state {
     flex: 1; display: flex; flex-direction: column; align-items: center;
@@ -499,8 +499,8 @@ export const SUMMARY_STYLES = `
   .empty-message {
     padding: 0.9rem 0 0.15rem;
     color: var(--ink-55);
-    font-size: 13px;
-    line-height: 1.72;
+    font-size: 14.5px;
+    line-height: 1.75;
   }
 
   .file-summary {
@@ -890,7 +890,5 @@ function SummaryShell({ children, note = "Use the sidebar to move between the gu
 }
 
 export default SummaryShell;
-
-
 
 
