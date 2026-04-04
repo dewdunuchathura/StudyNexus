@@ -8,7 +8,7 @@ const Layout = ({ children }) => {
     const location = useLocation();
 
     // Do not show the sidebar/dashboard layout on Home, Login, or Register pages
-    const isPublicPage = ["/", "/login", "/register"].includes(location.pathname);
+    const isPublicPage = ["/", "/login", "/register", "/home"].includes(location.pathname);
 
     if (!user || isPublicPage) {
         return <div className="layout-root">{children}</div>;

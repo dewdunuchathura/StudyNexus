@@ -11,9 +11,12 @@ const Register     = React.lazy(() => import("./pages/Register"));
 const Dashboard    = React.lazy(() => import("./pages/Dashboard"));
 const Leaderboard  = React.lazy(() => import("./pages/Leaderboard"));
 const HomePage     = React.lazy(() => import("./pages/HomePage"));
+const Home2        = React.lazy(() => import("./pages/Home2"));
 
 // Admin / Lecturer only — lazy loaded
 const UserManagement = React.lazy(() => import("./pages/UserManagement"));
+const Admin          = React.lazy(() => import("./pages/admin"));           // Mindula's dashboard
+const Admindashboard = React.lazy(() => import("./pages/Admindashboard")); // Pamuditha's dashboard
 
 const LoadingFallback = () => (
   <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
@@ -34,6 +37,15 @@ function App() {
 
               {/* Authenticated — any logged-in user */}
               <Route
+                path="/home"
+                element={
+                  <ProtectedRoute>
+                    <Home2 />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
                 path="/dashboard"
                 element={
                   <ProtectedRoute>
@@ -51,12 +63,32 @@ function App() {
                 }
               />
 
-              {/* Admin / Lecturer only */}
+              {/* Krishan — User Management */}
               <Route
                 path="/users"
                 element={
                   <RoleProtectedRoute allowedRoles={["admin", "lecturer"]}>
                     <UserManagement />
+                  </RoleProtectedRoute>
+                }
+              />
+
+              {/* Mindula — admin.jsx */}
+              <Route
+                path="/admin"
+                element={
+                  <RoleProtectedRoute allowedRoles={["admin", "lecturer"]}>
+                    <Admin />
+                  </RoleProtectedRoute>
+                }
+              />
+
+              {/* Pamuditha — Admindashboard.jsx */}
+              <Route
+                path="/admindashboard"
+                element={
+                  <RoleProtectedRoute allowedRoles={["admin", "lecturer"]}>
+                    <Admindashboard />
                   </RoleProtectedRoute>
                 }
               />
