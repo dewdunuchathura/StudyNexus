@@ -37,6 +37,7 @@ const FEATURES = [
 
 const AI_STEPS = [
   { num: '01', title: 'Upload Your Lecture Material', desc: 'Supports PDF, PPTX, DOCX – drag and drop or click to upload from any device.' },
+  { num: '01', title: 'Upload Your Lecture Material', desc: 'Supports PDF, PPTX, DOCX � drag and drop or click to upload from any device.' },
   { num: '02', title: 'AI Processes & Extracts Key Concepts', desc: 'Our model analyzes structure, headings, and content to identify what matters most.' },
   { num: '03', title: 'Review, Save & Download', desc: 'Get a summary card with bullet-point notes you can save, search, or export instantly.' },
 ];
@@ -64,6 +65,59 @@ const ROLES = [
     desc: 'Oversee the entire platform, manage users, view analytics, and ensure system security.',
     features: ['User Management', 'System Analytics', 'Security Oversight', 'Full Control'],
   },
+];
+
+
+const GROUPS = [
+  { icon: '??', bg: 'g-blue', name: 'Advanced Algorithms Study Group', meta: '14 members � CS Module 3', badge: 'Active', badgeClass: 'badge-active' },
+  { icon: '??', bg: 'g-green', name: 'Bioinformatics Research Circle', meta: '8 members � BIO Module 5', badge: 'New', badgeClass: 'badge-new' },
+  { icon: '??', bg: 'g-amber', name: 'Data Structures & Databases', meta: '20 members � IT Module 2', badge: 'Full', badgeClass: 'badge-full' },
+  { icon: '??', bg: 'g-pink', name: 'UI/UX Design Collective', meta: '11 members � DES Module 1', badge: 'Active', badgeClass: 'badge-active' },
+];
+
+const COLLAB_FEATURES = [
+  { icon: '??', title: 'Group Announcements & Discussion Boards', desc: 'Post updates, pin important messages, and keep every member in sync with a built-in group chat system.' },
+  { icon: '??', title: 'Managed Access & Role Assignment', desc: 'Group leaders can accept or reject member requests, assign roles, and control who sees what.' },
+  { icon: '??', title: 'Shared Resource Library', desc: 'Every group gets its own resource hub where members can upload, comment, and organize files by module.' },
+];
+
+const RESOURCES = [
+  { icon: '??', title: 'Upload Materials', desc: 'Share lecture notes, past papers, and study guides with your group or the wider platform.' },
+  { icon: '???', title: 'Categorized by Module', desc: 'Resources are tagged by subject and module so finding what you need takes seconds, not minutes.' },
+  { icon: '??', title: 'Comment & Interact', desc: 'Ask questions, leave feedback, and discuss shared materials directly within the platform.' },
+  { icon: '??', title: 'Content Moderation', desc: 'Report inappropriate content and let admins maintain a safe, productive academic environment.' },
+];
+
+const STATS = [
+  { num: '12,000+', lbl: 'Active University Students' },
+  { num: '98.7%', lbl: 'AI Summary Accuracy Rate' },
+  { num: '3,500+', lbl: 'Study Groups Created' },
+  { num: '250k+', lbl: 'Resources Shared' },
+];
+
+const TESTIMONIALS = [
+  {
+    initials: 'AK', stars: '?????',
+    quote: 'The AI summary feature is a game-changer. I upload my lecturer\'s slides and get study-ready notes in under 30 seconds. My GPA improved noticeably after using EduNexus.',
+    name: 'Ashan Karunaratne', role: 'Computer Science Student, Year 3',
+  },
+  {
+    initials: 'NP', stars: '?????',
+    quote: 'As a lecturer, tracking student progress has never been this effortless. I can see who\'s engaged and who needs extra support � all in real time.',
+    name: 'Dr. Nirosha Perera', role: 'Senior Lecturer, Faculty of IT',
+  },
+  {
+    initials: 'SM', stars: '?????',
+    quote: 'Our study group uses EduNexus to share notes and coordinate before every exam. The group resource hub keeps everything organized � no more messy WhatsApp files!',
+    name: 'Sanduni Madushan', role: 'Business IT Student, Year 2',
+  },
+];
+
+const AI_BULLETS = [
+  'Normalization reduces data redundancy by organizing tables into defined normal forms (1NF ? 3NF).',
+  'A primary key uniquely identifies each row; foreign keys enforce referential integrity between relations.',
+  'ACID properties (Atomicity, Consistency, Isolation, Durability) guarantee transaction reliability.',
+  'Indexing improves query speed but increases write overhead � balance is critical for optimization.',
 ];
 
 export default function HomePage() {
@@ -109,6 +163,31 @@ export default function HomePage() {
               <Link to="/register" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                 Get Started
               </Link>
+            <h1 className="hero-title">
+              Study Smarter.<br />
+              Collaborate Better.<br />
+              <span className="gradient-text">Powered by AI.</span>
+            </h1>
+            <p className="hero-sub">
+              The intelligent academic platform that helps university students upload
+              lecture materials, generate AI summaries, form study groups, and track
+              progress � all in one place.
+            </p>
+            <div className="hero-actions">
+              <a href="/signup" className="btn-hero-primary">Start Learning Now</a>
+              <a href="#how-it-works" className="btn-hero-ghost">? See How It Works</a>
+            </div>
+            <div className="hero-stats">
+              {[
+                { num: '12k+', lbl: 'Active Students' },
+                { num: '98%', lbl: 'Summary Accuracy' },
+                { num: '3.5k', lbl: 'Study Groups' },
+              ].map((s) => (
+                <div key={s.lbl}>
+                  <div className="stat-num">{s.num}</div>
+                  <div className="stat-lbl">{s.lbl}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -139,6 +218,35 @@ export default function HomePage() {
             >
               Browse Groups
             </Link>
+          <div className="hero-visual">
+            <div className="hero-card">
+              <div className="card-header">
+                <div className="dot dot-r" />
+                <div className="dot dot-y" />
+                <div className="dot dot-g" />
+                <div className="card-url">edunexus.app/dashboard</div>
+              </div>
+              <div className="card-metrics">
+                {[
+                  { num: '12', lbl: 'Active Goals', bar: 'bar-blue', w: '75%' },
+                  { num: '8', lbl: 'Completed Tasks', bar: 'bar-green', w: '90%' },
+                  { num: '3', lbl: 'Pending Review', bar: 'bar-amber', w: '35%' },
+                ].map((m) => (
+                  <div className="metric-box" key={m.lbl}>
+                    <div className="metric-num">{m.num}</div>
+                    <div className="metric-lbl">{m.lbl}</div>
+                    <div className={`metric-bar ${m.bar}`} style={{ width: m.w }} />
+                  </div>
+                ))}
+              </div>
+              <div className="ai-pill">
+                <div className="ai-pill-icon">??</div>
+                <div className="ai-pill-text">
+                  <strong>AI Summary Ready</strong>
+                  "Database Normalization" � 4 key points extracted
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -177,6 +285,16 @@ export default function HomePage() {
             <h2 className="text-4xl font-bold text-gray-900 mb-4">How AI Summaries Work</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Get intelligent summaries in three simple steps
+
+      <section className="ai-section" id="ai-summary">
+        <div className="hero-bg-dots" />
+        <div className="ai-inner">
+          <div className="fade-up">
+            <div className="section-label">AI-Powered Intelligence</div>
+            <h2 className="section-title">From lecture file to smart notes in seconds</h2>
+            <p className="section-sub">
+              Our AI engine reads your uploaded materials and distills them into clean,
+              actionable study content so you can focus on understanding � not note-taking.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
@@ -184,6 +302,26 @@ export default function HomePage() {
               <div key={index} className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl mb-4 mx-auto">
                   {step.num}
+
+          <div className="ai-demo-card fade-up">
+            <div className="upload-zone">
+              <div className="upload-icon">??</div>
+              <div className="upload-text">
+                <strong>Drag & drop</strong> your lecture file here
+                <br />or click to browse
+              </div>
+              <div className="file-types">
+                {["PDF", "PPT", "DOCX", "TXT"].map((t) => (
+                  <span className="file-tag" key={t}>{t}</span>
+                ))}
+              </div>
+            </div>
+            <div className="ai-output">
+              <div className="ai-output-label">? AI-Generated Summary � Database Systems</div>
+              {AI_BULLETS.map((b, i) => (
+                <div className="ai-bullet" key={i}>
+                  <span className="ai-bullet-arrow">?</span>
+                  {b}
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{step.title}</h3>
                 <p className="text-gray-600">{step.desc}</p>
@@ -200,6 +338,15 @@ export default function HomePage() {
             <h2 className="text-4xl font-bold text-gray-900 mb-4">How StudyNexus Works</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Get started in minutes and transform your study routine
+
+      <section className="hp-section steps-section" id="how-it-works">
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div className="section-head center fade-up">
+            <div className="section-label">How It Works</div>
+            <h2 className="section-title">Get started in four simple steps</h2>
+            <p className="section-sub">
+              From signup to full academic collaboration � EduNexus gets you productive
+              in minutes.
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -223,6 +370,14 @@ export default function HomePage() {
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Built for Everyone</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Tailored features for students, lecturers, and administrators
+      <section className="hp-section roles-section" id="roles">
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div className="section-head center fade-up">
+            <div className="section-label">Built for Everyone</div>
+            <h2 className="section-title">A platform that adapts to your role</h2>
+            <p className="section-sub">
+              Whether you\'re learning, teaching, or managing � EduNexus is tailored
+              to your exact needs.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
@@ -277,6 +432,22 @@ export default function HomePage() {
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">SN</span>
+      <section className="hp-section resources-section" id="resources">
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div className="section-head center fade-up">
+            <div className="section-label">Academic Resources</div>
+            <h2 className="section-title">Share knowledge. Grow together.</h2>
+            <p className="section-sub">
+              A centralized hub for all your academic materials � organized, searchable,
+              and always at your fingertips.
+            </p>
+          </div>
+          <div className="resources-grid">
+            {RESOURCES.map((r) => (
+              <div className="res-card fade-up" key={r.title}>
+                <span className="res-icon">{r.icon}</span>
+                <h4>{r.title}</h4>
+                <p>{r.desc}</p>
               </div>
               <span className="font-bold text-xl text-white">StudyNexus</span>
             </div>
@@ -309,6 +480,14 @@ export default function HomePage() {
         </div>
         <div className="max-w-7xl mx-auto mt-8 pt-8 border-t border-gray-800 text-center">
           <p>&copy; 2024 StudyNexus. All rights reserved.</p>
+
+        <div className="footer-bottom">
+          <span>2026 EduNexus. All rights reserved. Built with MERN Stack.</span>
+          <div className="footer-socials">
+            {["??", "in", "gh", "@"].map((icon) => (
+              <a href="#" className="social-btn" key={icon}>{icon}</a>
+            ))}
+          </div>
         </div>
       </footer>
     </div>

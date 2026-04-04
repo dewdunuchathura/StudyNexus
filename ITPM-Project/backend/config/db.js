@@ -1,20 +1,39 @@
 import mongoose from "mongoose";
 
-const connectDB = async () => {
+
+async function dropLegacyLectureSummaryIndexes() {
+  const collection = mongoose.connection.db.collection("lecturesummaries");
+
   try {
-    if (!process.env.MONGO_URI) {
-      console.warn('⚠️  MONGO_URI not set — skipping MongoDB connection (running in degraded mode)');
+    const indexes = await collection.indexes();
+    const hasWorkspaceIndex = indexes.some((index) => index.name === "workspaceId_1");
+
+    if (hasWorkspaceIndex) {
+      await collection.dropIndex("workspaceId_1");
+      console.log("Dropped legacy lecturesummaries.workspaceId_1 index");
+    }
+  } catch (error) {
+    if (error.codeName === "IndexNotFound" || error.code === 27) {
       return;
     }
-
-    const conn = await mongoose.connect(process.env.MONGO_URI);
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error("❌ DB ERROR:", error.message);
-    // don't exit the whole app; allow server to run so frontend/pages can be tested
-    // process.exit(1);
+    throw error;
   }
-};
+}
 
-export default connectDB;
+async function connectDB() {
+  const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
 
+  if (!uri) {
+    throw new Error("MONGODB_URI is not set");
+  }
+
+  mongoose.set("strictQuery", true);
+  await mongoose.connect(uri, {
+    serverSelectionTimeoutMS: 5000,
+  });
+
+  await dropLegacyLectureSummaryIndexes();
+
+  console.log("MongoDB connected");
+  return mongoose.connection;
+}

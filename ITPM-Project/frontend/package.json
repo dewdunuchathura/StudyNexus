@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node scripts/run-react-scripts.js start",
     "dev": "vite",
+    "dev": "vite --host 127.0.0.1 --port 5174 --strictPort",
     "build": "vite build",
     "preview": "vite preview",
     "test": "node scripts/run-react-scripts.js test",
@@ -42,4 +43,17 @@
       "last 1 safari version"
     ]
   }
+    "lucide-react": "^1.7.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.13.2"
+  },
+  "devDependencies": {
+    "vite": "^6.0.7"
+  },
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
