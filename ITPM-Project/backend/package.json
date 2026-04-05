@@ -20,8 +20,4 @@
   "keywords": [],
   "author": "",
   "license": "ISC"
-    "mongoose": "^8.9.5",
-    "node-fetch": "^3.3.2",
-    "pdf-parse": "^2.4.5"
-  }
 }
