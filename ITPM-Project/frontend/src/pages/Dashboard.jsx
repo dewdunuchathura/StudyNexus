@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import {
     Target, CheckSquare, BarChart2, AlertTriangle, PauseCircle,
     Plus, Calendar, Trash2, Edit
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import apiClient, { getErrorMessage, getPayload } from "../services/apiClient";
 import "./Dashboard.css";
 
 const Dashboard = () => {
@@ -30,8 +30,8 @@ const Dashboard = () => {
 
     const fetchGoals = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/goals");
-            setGoals(res.data);
+            const response = await apiClient.get("/api/goals");
+            setGoals(getPayload(response));
         } catch (err) {
             console.error(err);
         } finally {
@@ -41,8 +41,9 @@ const Dashboard = () => {
 
     const fetchStudents = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/user");
-            setStudents(res.data.filter(u => u.role === "student" && u.status === "Active"));
+            const response = await apiClient.get("/user");
+            const users = getPayload(response);
+            setStudents(users.filter((u) => u.role === "student" && u.status === "Active"));
         } catch (err) {
             console.error(err);
         }
@@ -90,25 +91,27 @@ const Dashboard = () => {
 
         try {
             if (editingId) {
-                const res = await axios.put(`http://localhost:5000/api/goals/${editingId}`, formData);
-                setGoals(goals.map(g => g._id === editingId ? res.data : g));
+                const response = await apiClient.put(`/api/goals/${editingId}`, formData);
+                const updatedGoal = getPayload(response);
+                setGoals(goals.map((g) => (g._id === editingId ? updatedGoal : g)));
             } else {
-                const res = await axios.post("http://localhost:5000/api/goals", formData);
-                setGoals([res.data, ...goals]);
+                const response = await apiClient.post("/api/goals", formData);
+                const createdGoal = getPayload(response);
+                setGoals([createdGoal, ...goals]);
             }
             setIsModalOpen(false);
         } catch (err) {
-            alert("Failed to save goal.");
+            alert(getErrorMessage(err, "Failed to save goal."));
         }
     };
 
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this goal?")) return;
         try {
-            await axios.delete(`http://localhost:5000/api/goals/${id}`);
+            await apiClient.delete(`/api/goals/${id}`);
             setGoals(goals.filter(g => g._id !== id));
         } catch (err) {
-            alert("Failed to delete goal.");
+            alert(getErrorMessage(err, "Failed to delete goal."));
         }
     };
 
@@ -128,12 +131,13 @@ const Dashboard = () => {
         else if (newProgress === 0 && goal.status === "Completed") newStatus = "Not Started";
 
         try {
-            const res = await axios.put(`http://localhost:5000/api/goals/${goal._id}`, {
+            const response = await apiClient.put(`/api/goals/${goal._id}`, {
                 progress: newProgress, status: newStatus
             });
-            setGoals(goals.map(g => g._id === goal._id ? res.data : g));
+            const updatedGoal = getPayload(response);
+            setGoals(goals.map((g) => (g._id === goal._id ? updatedGoal : g)));
         } catch (err) {
-            alert("Failed to update progress.");
+            alert(getErrorMessage(err, "Failed to update progress."));
         }
     };
 

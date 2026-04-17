@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import {
     Users, Users2, GraduationCap, CheckSquare, Clock,
     Search, Edit, Trash2, Shield, Plus, X
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import apiClient, { getErrorMessage, getPayload } from "../services/apiClient";
 import "./Dashboard.css";       /* stat-card, page-header, modal styles */
 import "./UserManagement.css";
 
@@ -34,8 +34,8 @@ const UserManagement = () => {
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            const res = await axios.get("http://localhost:5000/user");
-            setUsers(res.data);
+            const response = await apiClient.get("/user");
+            setUsers(getPayload(response));
         } catch (err) {
             console.error(err);
         } finally {
@@ -89,24 +89,26 @@ const UserManagement = () => {
         try {
             if (editingUser) {
                 // PUT /user/:id  — update existing
-                const res = await axios.put(
-                    `http://localhost:5000/user/${editingUser._id}`,
+                const response = await apiClient.put(
+                    `/user/${editingUser._id}`,
                     formData
                 );
+                const payload = getPayload(response);
                 setUsers(prev => prev.map(u =>
-                    u._id === editingUser._id ? res.data.user : u
+                    u._id === editingUser._id ? payload.user : u
                 ));
                 setFormSuccess("User updated successfully.");
                 setTimeout(() => setIsModalOpen(false), 900);
             } else {
                 // POST /user/add  — create new user with password hashing on backend
-                const res = await axios.post("http://localhost:5000/user/add", formData);
-                setFormSuccess(res.data.message || "User added successfully.");
+                const response = await apiClient.post("/user/add", formData);
+                const payload = getPayload(response);
+                setFormSuccess(payload.message || "User added successfully.");
                 fetchUsers();
                 setTimeout(() => setIsModalOpen(false), 900);
             }
         } catch (err) {
-            const msg = err.response?.data?.message || "Failed to save user. Please try again.";
+            const msg = getErrorMessage(err, "Failed to save user. Please try again.");
             setFormError(msg);
         } finally {
             setSaving(false);
@@ -115,10 +117,10 @@ const UserManagement = () => {
 
     const handleDeleteUser = async (id) => {
         try {
-            await axios.delete(`http://localhost:5000/user/${id}`);
+            await apiClient.delete(`/user/${id}`);
             setUsers(prev => prev.filter(u => u._id !== id));
         } catch (err) {
-            alert(err.response?.data?.message || "Error deleting user.");
+            alert(getErrorMessage(err, "Error deleting user."));
         } finally {
             setDeleteId(null);
         }

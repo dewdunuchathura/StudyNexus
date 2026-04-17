@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
 import { Trophy, Medal, Search, RefreshCw, Star, Target, CheckSquare, TrendingUp } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import apiClient, { getPayload } from "../services/apiClient";
 import "./Leaderboard.css";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
@@ -19,8 +19,8 @@ const Leaderboard = () => {
         setLoading(true);
         setError(null);
         try {
-            const res = await axios.get("http://localhost:5000/api/goals/leaderboard");
-            setStudents(res.data);
+            const response = await apiClient.get("/api/goals/leaderboard");
+            setStudents(getPayload(response));
         } catch (err) {
             console.error("Failed to load leaderboard:", err);
             setError("Could not load leaderboard. Make sure the backend server is running.");

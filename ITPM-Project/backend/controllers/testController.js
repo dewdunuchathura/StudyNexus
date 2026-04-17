@@ -1,9 +1,11 @@
+const { sendSuccess } = require("./responseHelpers");
+
 // =====================
 // GENERAL DASHBOARD
 // =====================
 exports.dashboard = (req, res) => {
-  res.json({
+  return sendSuccess(res, {
     message: "Welcome to dashboard",
-    user: req.user
+    user: req.user,
   });
 };

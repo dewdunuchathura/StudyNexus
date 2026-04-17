@@ -1,60 +1,63 @@
 import { createContext, useState, useEffect, useContext } from "react";
-import axios from "axios";
+import apiClient, { getPayload, setAuthToken } from "../services/apiClient";
 
 export const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    // Axios interceptor for appending token
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (token) {
-            axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            fetchCurrentUser();
-        } else {
-            setLoading(false);
-        }
-    }, []);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
 
-    const fetchCurrentUser = async () => {
-        try {
-            const res = await axios.get("http://localhost:5000/api/auth/me");
-            setUser(res.data);
-        } catch (err) {
-            console.error("Fetch user error:", err);
-            logout(); // clear invalid token
-        } finally {
-            setLoading(false);
-        }
-    };
+    if (token) {
+      setAuthToken(token);
+      fetchCurrentUser();
+      return;
+    }
 
-    const login = async (email, password) => {
-        const res = await axios.post("http://localhost:5000/api/auth/login", { email, password });
-        const { token, user } = res.data;
-        localStorage.setItem("token", token);
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        setUser(user);
-        return res.data;
-    };
+    setLoading(false);
+  }, []);
 
-    const register = async (userData) => {
-        await axios.post("http://localhost:5000/api/auth/register", userData);
-        // User needs to login after registering, or we can auto-login
-    };
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await apiClient.get("/api/auth/me");
+      setUser(getPayload(response));
+    } catch (error) {
+      console.error("Fetch user error:", error);
+      logout();
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const logout = () => {
-        localStorage.removeItem("token");
-        delete axios.defaults.headers.common["Authorization"];
-        setUser(null);
-    };
+  const login = async (email, password) => {
+    const response = await apiClient.post("/api/auth/login", { email, password });
+    const payload = getPayload(response);
+    const { token, user: loggedInUser } = payload;
 
-    return (
-        <AuthContext.Provider value={{ user, login, register, logout, loading }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    localStorage.setItem("token", token);
+    setAuthToken(token);
+    setUser(loggedInUser);
+
+    return payload;
+  };
+
+  const register = async (userData) => {
+    await apiClient.post("/api/auth/register", userData);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    setAuthToken(null);
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
