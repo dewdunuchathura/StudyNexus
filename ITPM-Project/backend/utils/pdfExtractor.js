@@ -1,4 +1,4 @@
-const fs = require("fs/promises");
+ï»¿const fs = require("fs/promises");
 const os = require("os");
 const path = require("path");
 const { execFile } = require("child_process");
@@ -7,6 +7,29 @@ const { PDFParse } = require("pdf-parse");
 
 const execFileAsync = promisify(execFile);
 
+const PPTX_MIME_TYPES = new Set([
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "application/vnd.ms-powerpoint.presentation.macroenabled.12",
+]);
+
+const PDF_MIME_TYPES = new Set(["application/pdf"]);
+
+function getExtension(fileName = "") {
+  const value = String(fileName);
+  if (!value.includes(".")) return "";
+  return value.split(".").pop().toLowerCase();
+}
+
+function isPdfFile(fileName = "", mimeType = "") {
+  const extension = getExtension(fileName);
+  return extension === "pdf" || PDF_MIME_TYPES.has(String(mimeType).toLowerCase());
+}
+
+function isPptxFile(fileName = "", mimeType = "") {
+  const extension = getExtension(fileName);
+  return extension === "pptx" || PPTX_MIME_TYPES.has(String(mimeType).toLowerCase());
+}
+
 function cleanText(text) {
   return String(text)
     .replace(/\b(Dr|Mr|Ms|Prof)\.?\s+[A-Z][a-z]+\s+[A-Z][a-z]+/g, "")
@@ -14,7 +37,7 @@ function cleanText(text) {
     .replace(/[A-Za-z0-9_\-]+\.pdf/gi, "")
     .replace(/\d+\s*(of|\/)\s*\d+/gi, "")
     .replace(/[\u25cf\u2022\u25aa\u25a0\u25c6\u25e6\u00a7]/g, "")
-    .replace(/[-–—]{2,}/g, "")
+    .replace(/[-â€“â€”]{2,}/g, "")
     .replace(/<[^>]+>/g, "")
     .replace(/^.{0,20}$/gm, "")
     .replace(/\s+/g, " ")
@@ -48,7 +71,7 @@ function cleanExtractedText(text = "") {
     .filter((line) => !/(Lecture|Faculty|Department|University|IT\d{4})/i.test(line))
     .filter((line) => !/[A-Za-z0-9_\-]+\.pdf/i.test(line))
     .filter((line) => !/^.{0,20}$/.test(line))
-    .filter((line) => !/^[\s\-–—_\u25cf\u2022\u25aa\u25a0\u25c6\u25e6\u00a7]+$/.test(line));
+    .filter((line) => !/^[\s\-â€“â€”_\u25cf\u2022\u25aa\u25a0\u25c6\u25e6\u00a7]+$/.test(line));
 
   const cleanedLines = removeRepeatedHeaders(lines);
   return cleanText(cleanedLines.join("\n"));
@@ -125,11 +148,15 @@ async function extractPPTXText(fileBuffer) {
   }
 }
 
-async function extractLectureText(fileBuffer, fileName = "") {
-  const extension = path.extname(String(fileName)).toLowerCase();
-  if (extension === ".pptx") {
+async function extractLectureText(fileBuffer, fileName = "", mimeType = "") {
+  if (isPptxFile(fileName, mimeType)) {
     return extractPPTXText(fileBuffer);
   }
+
+  if (isPdfFile(fileName, mimeType) || !String(fileName).trim()) {
+    return extractPDFText(fileBuffer);
+  }
+
   return extractPDFText(fileBuffer);
 }
 
@@ -139,5 +166,7 @@ module.exports = {
   extractLectureText,
   extractPDFText,
   extractPPTXText,
+  getExtension,
+  isPdfFile,
+  isPptxFile,
 };
-

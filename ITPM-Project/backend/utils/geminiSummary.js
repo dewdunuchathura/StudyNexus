@@ -371,7 +371,7 @@ async function callGemini(lectureText, prompt) {
 async function generateFromText(text, fileName) {
   const lectureText = String(text || "").trim();
   if (!lectureText) {
-    throw new Error("No lecture text was extracted from the uploaded PDF");
+    throw new Error("No lecture text was extracted from the uploaded lecture file");
   }
 
   const prompt = [

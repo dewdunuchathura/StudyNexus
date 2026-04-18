@@ -1,4 +1,4 @@
-const crypto = require("crypto");
+﻿const crypto = require("crypto");
 const LectureSummary = require("../models/LectureSummary");
 const { extractLectureText } = require("../utils/pdfExtractor");
 const { generateFromText, isStudyContentValid } = require("../utils/geminiSummary");
@@ -122,7 +122,7 @@ function getFileFromRequest(req) {
   };
 }
 
-function ensurePdfFile(file) {
+function ensureSupportedLectureFile(file) {
   if (!file?.fileName) {
     throw new Error("fileName is required");
   }
@@ -155,7 +155,7 @@ async function uploadLectureSummary(req, res) {
       return res.status(400).json({ ok: false, message: "fileName is required" });
     }
 
-    ensurePdfFile(file);
+    ensureSupportedLectureFile(file);
 
     const fileHash = createFileHash(file.buffer);
     const existingRecord = await LectureSummary.findOne({ fileHash }).sort({ uploadDate: -1, createdAt: -1 });
@@ -165,19 +165,19 @@ async function uploadLectureSummary(req, res) {
     }
 
     console.log("Extracting...");
-    const originalText = await extractLectureText(file.buffer, file.fileName);
+    const originalText = await extractLectureText(file.buffer, file.fileName, file.mimeType);
     console.log("Extracted text length:", originalText.length);
     console.log("EXTRACTED TEXT PREVIEW:", originalText.slice(0, 300));
 
     if (!originalText) {
-      return res.status(400).json({ ok: false, message: "No text could be extracted from the PDF" });
+      return res.status(400).json({ ok: false, message: "No text could be extracted from the lecture file" });
     }
 
     console.log("Summarizing...");
     const geminiContent = await generateFromText(originalText, file.fileName);
     const content = ensureContent(geminiContent, originalText);
     console.log("Summary items:", content.summary.length);
-        console.log("Questions items:", content.questions.length);
+    console.log("Questions items:", content.questions.length);
     console.log("FINAL CLEANED OUTPUT:", JSON.stringify(content).slice(0, 2000));
 
     const savedRecord = await LectureSummary.create({
@@ -195,7 +195,7 @@ async function uploadLectureSummary(req, res) {
     return res.status(201).json({ ok: true, data: buildPayload(savedRecord), reused: false });
   } catch (err) {
     console.error("Upload failed:", err);
-    const status = /fileName is required|A PDF or PPTX file is required|Only PDF and PPTX files are supported|No text could be extracted/i.test(
+    const status = /fileName is required|A PDF or PPTX file is required|Only PDF and PPTX files are supported|No text could be extracted|lecture file/i.test(
       err.message
     )
       ? 400
@@ -264,9 +264,3 @@ module.exports = {
   getCurrentLectureSummary,
   clearCurrentLectureSummary,
 };
-
-
-
-
-
-
