@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
-const jwt    = require("jsonwebtoken");
-const User   = require("../models/User");
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+const { sendError, sendSuccess } = require("./responseHelpers");
 
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -13,36 +14,40 @@ exports.register = async (req, res) => {
 
     // Validate required fields
     if (!firstName || !firstName.trim())
-      return res.status(400).json({ message: "First name is required." });
+      return sendError(res, "First name is required.", 400);
     if (!lastName || !lastName.trim())
-      return res.status(400).json({ message: "Last name is required." });
+      return sendError(res, "Last name is required.", 400);
     if (!email || !email.trim())
-      return res.status(400).json({ message: "Email is required." });
+      return sendError(res, "Email is required.", 400);
     if (!isValidEmail(email))
-      return res.status(400).json({ message: "Please enter a valid email address." });
+      return sendError(res, "Please enter a valid email address.", 400);
     if (!password || password.length < 6)
-      return res.status(400).json({ message: "Password must be at least 6 characters." });
+      return sendError(res, "Password must be at least 6 characters.", 400);
 
     // Duplicate email
     const existing = await User.findOne({ email: email.toLowerCase().trim() });
     if (existing)
-      return res.status(409).json({ message: "An account with this email already exists." });
+      return sendError(res, "An account with this email already exists.", 409);
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
       firstName: firstName.trim(),
-      lastName:  lastName.trim(),
-      email:     email.toLowerCase().trim(),
-      password:  hashedPassword,
-      role:      "student",   // Self-registration is always student
+      lastName: lastName.trim(),
+      email: email.toLowerCase().trim(),
+      password: hashedPassword,
+      role: "student", // Self-registration is always student
     });
 
     await newUser.save();
-    return res.status(201).json({ message: "Account created successfully. Please log in." });
+    return sendSuccess(
+      res,
+      { message: "Account created successfully. Please log in." },
+      201
+    );
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Server error. Please try again." });
+    return sendError(res, "Server error. Please try again.");
   }
 };
 
@@ -54,17 +59,17 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !email.trim())
-      return res.status(400).json({ message: "Email is required." });
+      return sendError(res, "Email is required.", 400);
     if (!password)
-      return res.status(400).json({ message: "Password is required." });
+      return sendError(res, "Password is required.", 400);
 
     const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user)
-      return res.status(404).json({ message: "No account found with this email." });
+      return sendError(res, "No account found with this email.", 404);
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
-      return res.status(400).json({ message: "Incorrect password." });
+      return sendError(res, "Incorrect password.", 400);
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -72,21 +77,21 @@ exports.login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    return res.json({
+    return sendSuccess(res, {
       message: "Login successful.",
       token,
       user: {
-        id:        user._id,
+        id: user._id,
         firstName: user.firstName,
-        lastName:  user.lastName,
-        email:     user.email,
-        role:      user.role,
-        status:    user.status,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+        status: user.status,
       },
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Server error. Please try again." });
+    return sendError(res, "Server error. Please try again.");
   }
 };
 
@@ -96,10 +101,10 @@ exports.login = async (req, res) => {
 exports.getCurrentUser = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
-    if (!user) return res.status(404).json({ message: "User not found." });
-    return res.json(user);
+    if (!user) return sendError(res, "User not found.", 404);
+    return sendSuccess(res, user);
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Server error." });
+    return sendError(res, "Server error.");
   }
 };

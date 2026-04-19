@@ -1,9 +1,9 @@
-import Group from '../models/Group.js';
+const Group = require('../models/Group');
 
 // @desc    Get all groups
 // @route   GET /api/groups
 // @access  Public
-export const getGroups = async (req, res) => {
+const getGroups = async (req, res) => {
   try {
     const groups = await Group.find({});
     res.status(200).json({
@@ -23,7 +23,7 @@ export const getGroups = async (req, res) => {
 // @desc    Get single group by ID
 // @route   GET /api/groups/:id
 // @access  Public
-export const getGroupById = async (req, res) => {
+const getGroupById = async (req, res) => {
   try {
     const group = await Group.findOne({ id: req.params.id });
     
@@ -50,7 +50,7 @@ export const getGroupById = async (req, res) => {
 // @desc    Create new group
 // @route   POST /api/groups
 // @access  Public
-export const createGroup = async (req, res) => {
+const createGroup = async (req, res) => {
   try {
     const { 
       id, 
@@ -153,7 +153,7 @@ export const createGroup = async (req, res) => {
 // @desc    Update group
 // @route   PUT /api/groups/:id
 // @access  Public
-export const updateGroup = async (req, res) => {
+const updateGroup = async (req, res) => {
   try {
     const group = await Group.findOneAndUpdate(
       { id: req.params.id },
@@ -185,7 +185,7 @@ export const updateGroup = async (req, res) => {
 // @desc    Delete group
 // @route   DELETE /api/groups/:id
 // @access  Public
-export const deleteGroup = async (req, res) => {
+const deleteGroup = async (req, res) => {
   try {
     const group = await Group.findOneAndDelete({ id: req.params.id });
     
@@ -208,4 +208,12 @@ export const deleteGroup = async (req, res) => {
       error: error.message
     });
   }
+};
+
+module.exports = {
+  getGroups,
+  getGroupById,
+  createGroup,
+  updateGroup,
+  deleteGroup
 };

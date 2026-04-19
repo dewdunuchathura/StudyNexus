@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const groupSchema = new mongoose.Schema({
   id: {
@@ -136,6 +136,6 @@ const groupSchema = new mongoose.Schema({
   timestamps: true
 });
 
-const Group = mongoose.model('creategroup', groupSchema);
+const Group = mongoose.model('Group', groupSchema);
 
-export default Group;
+module.exports = Group;

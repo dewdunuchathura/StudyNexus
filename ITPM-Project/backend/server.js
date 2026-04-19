@@ -1,29 +1,34 @@
-import express from "express";
-import dotenv from "dotenv";
-import cors from "cors";
-import connectDB from "./config/db.js";
-import groupRoutes from "./routes/groupRoutes.js";
-import groupRequestRoutes from "./routes/groupRequestRoutes.js";
-import chatRoutes from "./routes/chat.js";
-import errorHandler from "./middleware/errorHandler.js";
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const connectDB = require("./config/db");
 
 dotenv.config();
-connectDB();
+
+// ── Import routes ─────────────────────────────────────
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
+const groupRoutes = require("./routes/groupRoutes");
+const groupRequestRoutes = require("./routes/groupRequestRoutes");
+const chatRoutes = require("./routes/chat");
 
 const app = express();
+const port = process.env.PORT || 5000;
 
-// Middleware
+// ── Middleware ─────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// ── Routes ─────────────────────────────────────────────
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/group-requests', groupRequestRoutes);
 app.use('/api/chat', chatRoutes);
 
-// Health check
+// ── Health check ───────────────────────────────────────
 app.get("/", (req, res) => {
-  res.json({
+  res.json({ 
     success: true,
     message: "StudySpace API is running...",
     version: "1.0.0",
@@ -34,9 +39,26 @@ app.get("/", (req, res) => {
   });
 });
 
-// Error handling middleware
-app.use(errorHandler);
+app.get("/api/health", (req, res) => {
+  res.json({ ok: true, message: "Backend is running" });
+});
 
-const PORT = process.env.PORT || 5000;
+// ── Error handling ─────────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ 
+    success: false, 
+    message: "Something went wrong!",
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
 
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+// ── Start server ───────────────────────────────────────
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
+
+// ── Connect to MongoDB ─────────────────────────────────
+connectDB().catch((error) => {
+  console.error("MongoDB connection failed:", error.message);
+});

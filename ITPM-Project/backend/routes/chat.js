@@ -1,9 +1,9 @@
-import express from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import ChatMessage from '../models/ChatMessage.js';
-import Group from '../models/Group.js';
+const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const ChatMessage = require('../models/ChatMessage');
+const Group = require('../models/Group');
 
 const router = express.Router();
 
@@ -422,4 +422,4 @@ router.delete('/messages/:messageId', async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

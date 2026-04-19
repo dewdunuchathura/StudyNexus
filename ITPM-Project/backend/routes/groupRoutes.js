@@ -1,11 +1,11 @@
-import express from 'express';
-import {
+const express = require('express');
+const {
   getGroups,
   getGroupById,
   createGroup,
   updateGroup,
   deleteGroup
-} from '../controllers/groupController.js';
+} = require('../controllers/groupController');
 
 const router = express.Router();
 
@@ -20,4 +20,4 @@ router.route('/:id')
   .put(updateGroup)
   .delete(deleteGroup);
 
-export default router;
+module.exports = router;

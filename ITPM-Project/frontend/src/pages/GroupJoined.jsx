@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import FileUpload from '../components/chat/FileUpload.jsx'
 import VoiceRecorder from '../components/chat/VoiceRecorder.jsx'
 
@@ -120,7 +120,7 @@ function GroupCard({ group, onOpen }) {
 // ─── Main GroupJoined page ──────────────────────────────────────────────
 export default function GroupJoined() {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const { id: groupId } = useParams()
   const [groups, setGroups] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -139,6 +139,7 @@ export default function GroupJoined() {
   const [inputMessage, setInputMessage] = useState('')
   const [groupMessages, setGroupMessages] = useState({}) // Store messages per group
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
+  const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(false) // Flag to prevent duplication
 
   // Fetch groups from database API
   useEffect(() => {
@@ -166,10 +167,52 @@ export default function GroupJoined() {
     fetchGroups()
   }, []) // Remove searchParams dependency to avoid re-fetching
 
+  // Auto-select group if groupId is in URL
+  useEffect(() => {
+    if (groups.length > 0 && !selectedGroup) {
+      if (groupId) {
+        const group = groups.find(g => g.id === groupId)
+        if (group) {
+          setSelectedGroup(group)
+        }
+      }
+    }
+  }, [groups, selectedGroup, groupId])
+
   // Load messages when group is selected
   useEffect(() => {
-    if (selectedGroup && !groupMessages[selectedGroup.id]) {
-      loadGroupMessages(selectedGroup.id)
+    if (selectedGroup) {
+      // First try to load from localStorage
+      const storedMessages = localStorage.getItem(`group_messages_${selectedGroup.id}`)
+      if (storedMessages && !groupMessages[selectedGroup.id]) {
+        setIsLoadingFromStorage(true)
+        try {
+          const messages = JSON.parse(storedMessages)
+          setGroupMessages(prev => ({
+            ...prev,
+            [selectedGroup.id]: messages
+          }))
+          
+          // Update group with stored messages only if group doesn't already have messages
+          if (!selectedGroup.messages || selectedGroup.messages.length === 0) {
+            const updatedGroup = {
+              ...selectedGroup,
+              messages: messages
+            }
+            setSelectedGroup(updatedGroup)
+            setGroups(groups.map(g => g.id === updatedGroup.id ? updatedGroup : g))
+          }
+        } catch (error) {
+          console.error('Error loading messages from localStorage:', error)
+        } finally {
+          setIsLoadingFromStorage(false)
+        }
+      }
+      
+      // Load from database if not already loaded
+      if (!groupMessages[selectedGroup.id]) {
+        loadGroupMessages(selectedGroup.id)
+      }
     }
   }, [selectedGroup]) // Only load if group changes and messages not already loaded
 
@@ -377,14 +420,27 @@ export default function GroupJoined() {
             [selectedGroup.id]: [...(prev[selectedGroup.id] || []), newMessage]
           }))
           
+          // Also add to group's message array for persistence
+          const updatedGroup = {
+            ...selectedGroup,
+            messages: [...(selectedGroup.messages || []), newMessage]
+          }
+          setSelectedGroup(updatedGroup)
+          setGroups(groups.map(g => g.id === updatedGroup.id ? updatedGroup : g))
+          
+          // Only save to localStorage if not loading from storage (prevents duplication)
+          if (!isLoadingFromStorage) {
+            localStorage.setItem(`group_messages_${selectedGroup.id}`, JSON.stringify(updatedGroup.messages))
+          }
+          
           console.log('Message saved to database:', data.data)
         } else {
           throw new Error(data.message || 'Database save failed')
         }
       } catch (dbError) {
-        console.warn('Database save failed, using local storage:', dbError.message)
+        console.warn('Database save failed, using localStorage:', dbError.message)
         
-        // Fallback: Save to local state only
+        // Fallback: Save to localStorage and local state
         const localMessage = {
           id: `msg_${Date.now()}`,
           groupId: selectedGroup.id,
@@ -409,6 +465,19 @@ export default function GroupJoined() {
           ...prev,
           [selectedGroup.id]: [...(prev[selectedGroup.id] || []), localMessage]
         }))
+        
+        // Also add to group's message array for persistence
+        const updatedGroup = {
+          ...selectedGroup,
+          messages: [...(selectedGroup.messages || []), localMessage]
+        }
+        setSelectedGroup(updatedGroup)
+        setGroups(groups.map(g => g.id === updatedGroup.id ? updatedGroup : g))
+        
+        // Only save to localStorage if not loading from storage (prevents duplication)
+        if (!isLoadingFromStorage) {
+          localStorage.setItem(`group_messages_${selectedGroup.id}`, JSON.stringify(updatedGroup.messages))
+        }
         
         console.log('Message saved locally:', localMessage)
       }
@@ -479,12 +548,98 @@ export default function GroupJoined() {
         
         console.log('Voice message saved to database:', data.data)
       } else {
-        console.error('Failed to save voice message:', data.message)
-        alert('Failed to send voice message. Please try again.')
+        // Fallback: Save to local state only
+        const localVoiceMessage = {
+          id: `voice_${Date.now()}`,
+          groupId: selectedGroup.id,
+          senderId: 'JD',
+          senderName: 'James Doe',
+          senderAvatar: 'JD',
+          senderColor: '#3B82F6',
+          messageType: 'audio',
+          content: '',
+          fileUrl: voiceData.audioUrl,
+          fileName: `voice_${Date.now()}.webm`,
+          fileSize: voiceData.audioBlob.size,
+          mimeType: 'audio/webm',
+          duration: voiceData.duration,
+          waveform: voiceData.waveform,
+          timestamp: new Date().toISOString(),
+          isOwn: true,
+          voice: {
+            url: voiceData.audioUrl,
+            duration: voiceData.duration,
+            size: voiceData.audioBlob.size,
+            waveform: voiceData.waveform
+          }
+        }
+        
+        // Add to group messages
+        setGroupMessages(prev => ({
+          ...prev,
+          [selectedGroup.id]: [...(prev[selectedGroup.id] || []), localVoiceMessage]
+        }))
+        
+        // Also add to group's message array for others to see
+        const updatedGroup = {
+          ...selectedGroup,
+          messages: [...(selectedGroup.messages || []), localVoiceMessage]
+        }
+        setSelectedGroup(updatedGroup)
+        setGroups(groups.map(g => g.id === updatedGroup.id ? updatedGroup : g))
+        
+        // Save to localStorage for persistence
+        localStorage.setItem(`group_messages_${selectedGroup.id}`, JSON.stringify(updatedGroup.messages))
+        
+        console.log('Voice message saved locally:', localVoiceMessage)
+        console.log('API Error:', data.message || 'Voice message API not available')
       }
     } catch (error) {
       console.error('Error sending voice message:', error)
-      alert('Failed to send voice message. Please try again.')
+      // Fallback: Save to local state only
+      const localVoiceMessage = {
+        id: `voice_${Date.now()}`,
+        groupId: selectedGroup.id,
+        senderId: 'JD',
+        senderName: 'James Doe',
+        senderAvatar: 'JD',
+        senderColor: '#3B82F6',
+        messageType: 'audio',
+        content: '',
+        fileUrl: voiceData.audioUrl,
+        fileName: `voice_${Date.now()}.webm`,
+        fileSize: voiceData.audioBlob.size,
+        mimeType: 'audio/webm',
+        duration: voiceData.duration,
+        waveform: voiceData.waveform,
+        timestamp: new Date().toISOString(),
+        isOwn: true,
+        voice: {
+          url: voiceData.audioUrl,
+          duration: voiceData.duration,
+          size: voiceData.audioBlob.size,
+          waveform: voiceData.waveform
+        }
+      }
+      
+      // Add to group messages
+      setGroupMessages(prev => ({
+        ...prev,
+        [selectedGroup.id]: [...(prev[selectedGroup.id] || []), localVoiceMessage]
+      }))
+      
+      // Also add to group's message array for others to see
+      const updatedGroup = {
+        ...selectedGroup,
+        messages: [...(selectedGroup.messages || []), localVoiceMessage]
+      }
+      setSelectedGroup(updatedGroup)
+      setGroups(groups.map(g => g.id === updatedGroup.id ? updatedGroup : g))
+      
+      // Save to localStorage for persistence
+      localStorage.setItem(`group_messages_${selectedGroup.id}`, JSON.stringify(updatedGroup.messages))
+      
+      console.log('Voice message saved locally (catch fallback):', localVoiceMessage)
     }
   }
 
@@ -650,7 +805,7 @@ export default function GroupJoined() {
                       </div>
 
                       {/* Display all messages for current group */}
-                      {(groupMessages[selectedGroup?.id] || []).map((message) => (
+                      {((selectedGroup?.messages) || (groupMessages[selectedGroup?.id] || [])).map((message) => (
                         <div key={message.id} className={`flex gap-3 items-end ${message.isOwn ? 'flex-row-reverse' : ''}`}>
                           <div
                             className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
@@ -683,12 +838,48 @@ export default function GroupJoined() {
                                   <div className="flex-1">
                                     <div className="text-xs opacity-75">Voice message</div>
                                     <div className="text-xs opacity-60">{Math.round(message.voice.duration)}s</div>
+                                    {/* Audio player with speed controls */}
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <audio 
+                                        ref={`audio_${message.id}`}
+                                        controls
+                                        className="h-6 w-full"
+                                        style={{ maxHeight: '24px' }}
+                                      >
+                                        <source src={message.voice.url} type="audio/webm" />
+                                      </audio>
+                                      {/* Speed controls */}
+                                      <div className="flex items-center gap-1">
+                                        <button
+                                          onClick={() => {
+                                            const audio = document.getElementById(`audio_${message.id}`) || document.querySelector(`[ref="audio_${message.id}"]`)
+                                            if (audio) audio.playbackRate = 0.5
+                                          }}
+                                          className="text-xs px-1 py-0.5 bg-white/20 hover:bg-white/30 rounded"
+                                        >
+                                          0.5x
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            const audio = document.getElementById(`audio_${message.id}`) || document.querySelector(`[ref="audio_${message.id}"]`)
+                                            if (audio) audio.playbackRate = 1
+                                          }}
+                                          className="text-xs px-1 py-0.5 bg-white/20 hover:bg-white/30 rounded"
+                                        >
+                                          1x
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            const audio = document.getElementById(`audio_${message.id}`) || document.querySelector(`[ref="audio_${message.id}"]`)
+                                            if (audio) audio.playbackRate = 2
+                                          }}
+                                          className="text-xs px-1 py-0.5 bg-white/20 hover:bg-white/30 rounded"
+                                        >
+                                          2x
+                                        </button>
+                                      </div>
+                                    </div>
                                   </div>
-                                  <button className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                                      <path d="M8 5v14l11-7z"/>
-                                    </svg>
-                                  </button>
                                 </div>
                               )}
                               
@@ -697,12 +888,31 @@ export default function GroupJoined() {
                                 <div className="mt-2 space-y-1">
                                   {message.files.map((file, index) => (
                                     <div key={index} className="flex items-center gap-2 bg-gray-50 rounded-lg p-2">
-                                      <span className="text-lg">
-                                        {file.type === 'image' ? '🖼️' : 
-                                         file.type === 'video' ? '🎥' : 
-                                         file.type === 'audio' ? '🎵' : '📄'}
-                                      </span>
-                                      <span className="text-sm text-slate-600">{file.name}</span>
+                                      {file.type === 'image' ? (
+                                        <div className="relative group">
+                                          <img 
+                                            src={file.url} 
+                                            alt={file.name}
+                                            className="w-20 h-20 object-cover rounded-lg cursor-pointer hover:scale-105 transition-transform"
+                                            onClick={() => window.open(file.url, '_blank')}
+                                          />
+                                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-colors flex items-center justify-center">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="white" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                              <path d="M15 12a3 3 0 1 1-3 3 3 3 0 0 1-3-3zm0 2a1 1 0 1 1 1 0 0 1 1-1 0z"/>
+                                              <path d="M2 7a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7z"/>
+                                            </svg>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <span className="text-lg">
+                                          {file.type === 'video' ? '🎥' : 
+                                           file.type === 'audio' ? '🎵' : '📄'}
+                                        </span>
+                                      )}
+                                      <div className="flex-1">
+                                        <div className="text-sm text-slate-600 truncate">{file.name}</div>
+                                        <div className="text-xs text-slate-400">{file.size || ''}</div>
+                                      </div>
                                     </div>
                                   ))}
                                 </div>

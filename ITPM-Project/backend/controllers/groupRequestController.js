@@ -1,10 +1,10 @@
-import Group from '../models/Group.js';
-import GroupRequest from '../models/GroupRequest.js';
+const Group = require('../models/Group');
+const GroupRequest = require('../models/GroupRequest');
 
 // @desc    Request to join a group
 // @route   POST /api/groups/:groupId/requests
 // @access  Public
-export const requestToJoinGroup = async (req, res) => {
+const requestToJoinGroup = async (req, res) => {
   try {
     const { groupId } = req.params;
     const { requesterId, requesterName, requesterEmail, message } = req.body;
@@ -72,7 +72,7 @@ export const requestToJoinGroup = async (req, res) => {
 // @desc    Get all pending requests for a group
 // @route   GET /api/groups/:groupId/requests
 // @access  Public
-export const getGroupRequests = async (req, res) => {
+const getGroupRequests = async (req, res) => {
   try {
     const { groupId } = req.params;
     const { status } = req.query;
@@ -101,7 +101,7 @@ export const getGroupRequests = async (req, res) => {
 // @desc    Accept a group request
 // @route   PUT /api/groups/:groupId/requests/:requestId/accept
 // @access  Public
-export const acceptGroupRequest = async (req, res) => {
+const acceptGroupRequest = async (req, res) => {
   try {
     const { groupId, requestId } = req.params;
     const { reviewedBy } = req.body;
@@ -174,7 +174,7 @@ export const acceptGroupRequest = async (req, res) => {
 // @desc    Reject a group request
 // @route   PUT /api/groups/:groupId/requests/:requestId/reject
 // @access  Public
-export const rejectGroupRequest = async (req, res) => {
+const rejectGroupRequest = async (req, res) => {
   try {
     const { groupId, requestId } = req.params;
     const { reviewedBy, rejectionReason } = req.body;
@@ -233,13 +233,13 @@ export const rejectGroupRequest = async (req, res) => {
 // @desc    Get user's request history
 // @route   GET /api/users/:userId/requests
 // @access  Public
-export const getUserRequests = async (req, res) => {
+const getUserRequests = async (req, res) => {
   try {
     const { userId } = req.params;
     const requests = await GroupRequest.find({ requesterId: userId })
       .populate('groupId', 'name category')
       .sort({ requestedAt: -1 });
-
+    
     res.status(200).json({
       success: true,
       count: requests.length,
@@ -252,4 +252,12 @@ export const getUserRequests = async (req, res) => {
       error: error.message
     });
   }
+};
+
+module.exports = {
+  requestToJoinGroup,
+  getGroupRequests,
+  acceptGroupRequest,
+  rejectGroupRequest,
+  getUserRequests
 };

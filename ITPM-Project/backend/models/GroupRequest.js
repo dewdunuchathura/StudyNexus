@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const groupRequestSchema = new mongoose.Schema({
   groupId: {
@@ -42,4 +42,5 @@ const groupRequestSchema = new mongoose.Schema({
 });
 
 const GroupRequest = mongoose.model('GroupRequest', groupRequestSchema);
-export default GroupRequest;
+
+module.exports = GroupRequest;

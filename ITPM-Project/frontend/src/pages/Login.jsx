@@ -6,15 +6,22 @@ import "./Auth.css";
 
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
+// ── Admin email → dashboard route mapping ─────────────────────────────────
+// Add each admin's email and their dashboard route here.
+const getAdminRoute = (email) => {
+    const routes = {
+        "dilsharakrishan@gmail.com": "/users",          // Krishan  — User Management
+        "nethmimindula@gmail.com":   "/admin",           // Mindula  — admin.jsx
+        "pamudithajayasena@gmail.com": "/admindashboard",  // Pamuditha — Admindashboard.jsx
+    };
+    return routes[email?.toLowerCase()] || "/home"; // unmapped admins go to /home
+};
+
 const Login = () => {
     const { login, user } = useAuth();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        if (user) {
-            navigate("/dashboard");
-        }
-    }, [user, navigate]);
+    // Removed automatic redirect - users should stay on login page if they navigate here manually
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -38,8 +45,10 @@ const Login = () => {
 
         setLoading(true);
         try {
-            await login(email, password);
-            navigate("/dashboard");
+            const { user: loggedInUser } = await login(email, password);
+            const isAdmin = loggedInUser?.role === "admin" || loggedInUser?.role === "lecturer";
+            const dest = isAdmin ? getAdminRoute(loggedInUser?.email) : "/home";
+            navigate(dest);
         } catch (err) {
             const msg = err.response?.data?.message
                 || err.response?.data

@@ -187,8 +187,6 @@ export default function AdminDashboard() {
           {[
             { id: 'dashboard', icon: '📊', label: 'Dashboard' },
             { id: 'groups', icon: '👥', label: 'Groups' },
-            { id: 'orders', icon: '📦', label: 'Orders' },
-            { id: 'products', icon: '🛍️', label: 'Products' },
             { id: 'reports', icon: '📈', label: 'Reports' },
             { id: 'settings', icon: '⚙️', label: 'Settings' }
           ].map(item => (
@@ -240,8 +238,6 @@ export default function AdminDashboard() {
               <h2 className="text-3xl font-bold capitalize" style={{ color: '#FFFFFF', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>
                 {activeMenuItem === 'dashboard' && 'Dashboard'}
                 {activeMenuItem === 'groups' && 'Groups Management'}
-                {activeMenuItem === 'orders' && 'Order Management'}
-                {activeMenuItem === 'products' && 'Product Management'}
                 {activeMenuItem === 'reports' && 'Reports & Analytics'}
                 {activeMenuItem === 'settings' && 'System Settings'}
               </h2>
@@ -598,30 +594,6 @@ export default function AdminDashboard() {
                     </tbody>
                   </table>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {activeMenuItem === 'orders' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12">
-              <div className="text-center">
-                <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-8">
-                  <span className="text-5xl">📦</span>
-                </div>
-                <h3 className="text-3xl font-semibold text-gray-800 mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>Order Management</h3>
-                <p className="text-gray-500" style={{ fontSize: '18px', fontFamily: 'Inter, sans-serif' }}>Track and manage orders</p>
-              </div>
-            </div>
-          )}
-
-          {activeMenuItem === 'products' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12">
-              <div className="text-center">
-                <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8">
-                  <span className="text-5xl">🛍️</span>
-                </div>
-                <h3 className="text-3xl font-semibold text-gray-800 mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>Product Management</h3>
-                <p className="text-gray-500" style={{ fontSize: '18px', fontFamily: 'Inter, sans-serif' }}>Manage products and inventory</p>
               </div>
             </div>
           )}

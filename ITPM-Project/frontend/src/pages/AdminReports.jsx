@@ -4,69 +4,130 @@ import { Link } from 'react-router-dom'
 // ─── Admin Reports Page ──────────────────────────────────────────────────────
 export default function AdminReports() {
   const [reports, setReports] = useState([])
+  const [groups, setGroups] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [selectedReport, setSelectedReport] = useState(null)
   const [showDetails, setShowDetails] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [selectedGroup, setSelectedGroup] = useState(null)
+  const [deleteReason, setDeleteReason] = useState('')
 
-  // Initialize with some sample reports
+  // Fetch groups and generate reports based on criteria
   useEffect(() => {
-    // Load reports from localStorage or initialize with sample data
-    const savedReports = localStorage.getItem('group_reports')
-    if (savedReports) {
-      setReports(JSON.parse(savedReports))
-    } else {
-      // Sample reports for demonstration
-      const sampleReports = [
-        {
-          id: 'RPT001',
-          groupId: 'IT23665798',
-          groupName: 'Final Year Project',
-          category: 'project',
-          reason: 'Inappropriate content and spam messages in group chat',
-          reportedBy: 'John Doe',
-          reporterId: 'IT23665799',
-          reportedAt: '2024-03-15T10:30:00Z',
+    const fetchData = async () => {
+      try {
+        // Fetch groups
+        const groupsResponse = await fetch('http://localhost:5000/api/groups')
+        const groupsData = await groupsResponse.json()
+        
+        if (groupsData.success) {
+          setGroups(groupsData.data)
+          
+          // Generate reports based on group conditions
+          const generatedReports = generateReportsFromGroups(groupsData.data || [])
+          
+          // Load existing reports from localStorage
+          const savedReports = localStorage.getItem('group_reports')
+          if (savedReports) {
+            const existingReports = JSON.parse(savedReports)
+            // Merge with generated reports, avoiding duplicates
+            const mergedReports = [...existingReports]
+            generatedReports.forEach(genReport => {
+              if (!existingReports.find(r => r.groupId === genReport.groupId && r.reason === genReport.reason)) {
+                mergedReports.push(genReport)
+              }
+            })
+            setReports(mergedReports)
+            localStorage.setItem('group_reports', JSON.stringify(mergedReports))
+          } else {
+            setReports(generatedReports)
+            localStorage.setItem('group_reports', JSON.stringify(generatedReports))
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        // Fallback to sample data
+        const sampleReports = [
+          {
+            id: 'RPT001',
+            groupId: 'IT23665798',
+            groupName: 'Final Year Project',
+            category: 'project',
+            reason: 'Multiple reports received',
+            reportedBy: 'System',
+            reporterId: 'SYSTEM',
+            reportedAt: new Date().toISOString(),
+            status: 'pending',
+            priority: 'high',
+            description: 'Group has exceeded report threshold',
+            actionTaken: 'none',
+            canTempDelete: true
+          }
+        ]
+        setReports(sampleReports)
+      }
+      setLoading(false)
+    }
+
+    fetchData()
+  }, [])
+
+  // Generate reports based on group conditions
+  const generateReportsFromGroups = (groups) => {
+    const reports = []
+    
+    groups.forEach(group => {
+      // Count existing reports for this group
+      const groupReports = reports.filter(r => r.groupId === group.id).length
+      
+      // Project groups with 2-3 reports
+      if (group.category === 'project' && groupReports >= 2 && groupReports <= 3) {
+        reports.push({
+          id: `RPT${group.id}`,
+          groupId: group.id,
+          groupName: group.name,
+          category: group.category,
+          reason: `Project group has ${groupReports} reports - eligible for temporary deletion`,
+          reportedBy: 'System',
+          reporterId: 'SYSTEM',
+          reportedAt: new Date().toISOString(),
           status: 'pending',
           priority: 'high',
-          description: 'Group members are posting spam content and inappropriate links. This is affecting the learning environment.',
-          actionTaken: 'none'
-        },
-        {
-          id: 'RPT002',
-          groupId: 'IT23665800',
-          groupName: 'Study Group - Mathematics',
-          category: 'study',
-          reason: 'False information being shared as study material',
-          reportedBy: 'Jane Smith',
-          reporterId: 'IT23665801',
-          reportedAt: '2024-03-14T15:45:00Z',
-          status: 'under_review',
-          priority: 'medium',
-          description: 'Members are sharing incorrect mathematical formulas and solutions that could mislead other students.',
-          actionTaken: 'Investigation started'
-        },
-        {
-          id: 'RPT003',
-          groupId: 'IT23665802',
-          groupName: 'Discussion Forum',
-          category: 'discussion',
-          reason: 'Harassment and bullying behavior',
-          reportedBy: 'Mike Johnson',
-          reporterId: 'IT23665803',
-          reportedAt: '2024-03-13T09:20:00Z',
-          status: 'resolved',
-          priority: 'high',
-          description: 'Multiple instances of harassment reported. Offending members have been identified.',
-          actionTaken: 'Offending members removed, warning issued'
+          description: `Project group "${group.name}" has received ${groupReports} reports. According to policy, admin can temporarily delete this group.`,
+          actionTaken: 'none',
+          canTempDelete: true
+        })
+      }
+      
+      // Study/Discussion groups with 15%+ members reporting
+      if ((group.category === 'study' || group.category === 'discussion') && group.panelMembers) {
+        const memberCount = group.panelMembers.length
+        const reportThreshold = Math.ceil(memberCount * 0.15) // 15% threshold
+        
+        if (groupReports >= reportThreshold) {
+          reports.push({
+            id: `RPT${group.id}`,
+            groupId: group.id,
+            groupName: group.name,
+            category: group.category,
+            reason: `${group.category} group has ${groupReports} reports (${Math.round((groupReports/memberCount)*100)}% of members) - eligible for temporary deletion`,
+            reportedBy: 'System',
+            reporterId: 'SYSTEM',
+            reportedAt: new Date().toISOString(),
+            status: 'pending',
+            priority: 'high',
+            description: `${group.category} group "${group.name}" has received reports from ${Math.round((groupReports/memberCount)*100)}% of members. According to policy, admin can temporarily delete this group.`,
+            actionTaken: 'none',
+            canTempDelete: true
+          })
         }
-      ]
-      setReports(sampleReports)
-      localStorage.setItem('group_reports', JSON.stringify(sampleReports))
-    }
-    setLoading(false)
-  }, [])
+      }
+    })
+    
+    return reports
+  }
 
   const filteredReports = reports.filter(report => {
     const matchesSearch = 
@@ -98,6 +159,49 @@ export default function AdminReports() {
     )
     setReports(updatedReports)
     localStorage.setItem('group_reports', JSON.stringify(updatedReports))
+  }
+
+  const handleTempDelete = async () => {
+    if (!selectedGroup || !deleteReason) return
+
+    try {
+      // Call API to temporarily delete group
+      const response = await fetch(`http://localhost:5000/api/groups/${selectedGroup.groupId}/temp-delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reason: deleteReason,
+          reportId: selectedReport.id
+        })
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        // Update report status
+        const updatedReports = reports.map(report => 
+          report.id === selectedReport.id 
+            ? { ...report, status: 'temp_deleted', actionTaken: `Group temporarily deleted: ${deleteReason}`, updatedAt: new Date().toISOString() }
+            : report
+        )
+        setReports(updatedReports)
+        localStorage.setItem('group_reports', JSON.stringify(updatedReports))
+        
+        // Close modal and reset state
+        setShowDeleteModal(false)
+        setSelectedGroup(null)
+        setDeleteReason('')
+        
+        alert(`Group "${selectedGroup.groupName}" has been temporarily deleted.`)
+      } else {
+        alert(data.message || 'Failed to temporarily delete group')
+      }
+    } catch (error) {
+      console.error('Error temporarily deleting group:', error)
+      alert('Network error. Please try again.')
+    }
   }
 
   const getStatusColor = (status) => {
@@ -297,6 +401,31 @@ export default function AdminReports() {
                           >
                             View Details
                           </button>
+                          {report.canTempDelete && report.status === 'pending' && (
+                            <button
+                              onClick={() => {
+                                setSelectedReport(report)
+                                setSelectedGroup({
+                                  groupId: report.groupId,
+                                  groupName: report.groupName,
+                                  category: report.category
+                                })
+                                setShowDeleteModal(true)
+                              }}
+                              className="px-4 py-2 text-base font-medium rounded-lg transition-all duration-200 hover:shadow-md"
+                              style={{ 
+                                backgroundColor: '#EF4444', 
+                                color: '#FFFFFF', 
+                                fontFamily: 'Inter, sans-serif',
+                                fontWeight: 400,
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontSize: '14px'
+                              }}
+                            >
+                              Temp Delete
+                            </button>
+                          )}
                           <button
                             onClick={() => {
                               const updatedReports = reports.map(r => 
@@ -437,6 +566,70 @@ export default function AdminReports() {
                 }}
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Temporary Delete Modal */}
+      {showDeleteModal && selectedGroup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Temporarily Delete Group</h3>
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false)
+                  setSelectedGroup(null)
+                  setDeleteReason('')
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">
+                Are you sure you want to temporarily delete <strong>{selectedGroup.groupName}</strong>?
+              </p>
+              <p className="text-xs text-gray-500">
+                This action can be reversed later. Group will be inaccessible but not permanently deleted.
+              </p>
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Reason for temporary deletion</label>
+              <textarea
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                rows="3"
+                placeholder="Enter reason..."
+                required
+              />
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false)
+                  setSelectedGroup(null)
+                  setDeleteReason('')
+                }}
+                className="flex-1 px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleTempDelete}
+                disabled={!deleteReason}
+                className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Temporarily Delete
               </button>
             </div>
           </div>

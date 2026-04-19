@@ -151,6 +151,7 @@ function GroupChatPanel({ group, onClose }) {
   const [typing, setTyping] = useState(false)
   const [replyIdx, setReplyIdx] = useState(0)
   const [activeTab, setActiveTab] = useState('chat') // chat | members | files
+  const [zoomLevel, setZoomLevel] = useState(100) // zoom percentage
   const bodyRef = useRef(null)
 
   // Scroll to bottom whenever messages change
@@ -270,6 +271,28 @@ function GroupChatPanel({ group, onClose }) {
                 <span className="font-mono font-normal ml-1 opacity-60">· {group.announcement.authorId}</span>
               </span>
             </div>
+            {/* Zoom Controls */}
+            <div className="flex items-center gap-2 ml-auto">
+              <button
+                onClick={() => setZoomLevel(Math.max(50, zoomLevel - 10))}
+                className="w-8 h-8 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 flex items-center justify-center text-gray-600 transition-all"
+                title="Zoom out"
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 4v4M4 8h8M6 6l2 2M10 6l-2 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </button>
+              <span className="text-[12px] font-semibold text-gray-600 min-w-[50px] text-center">{zoomLevel}%</span>
+              <button
+                onClick={() => setZoomLevel(Math.min(200, zoomLevel + 10))}
+                className="w-8 h-8 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 flex items-center justify-center text-gray-600 transition-all"
+                title="Zoom in"
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 4v4M4 8h8M6 10l2-2M10 10l-2 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
             <p className="text-[12px] text-blue-900 leading-relaxed">{group.announcement.text}</p>
           </div>
 
@@ -278,13 +301,18 @@ function GroupChatPanel({ group, onClose }) {
             {messages.map((msg, i) => (
               <div key={i} className={`flex gap-2 items-end ${msg.me ? 'flex-row-reverse' : ''}`}>
                 <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
-                  style={{ background: msg.color }}
+                  className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0"
+                  style={{ 
+                    background: msg.color,
+                    width: `${Math.round(28 * zoomLevel / 100)}px`,
+                    height: `${Math.round(28 * zoomLevel / 100)}px`,
+                    fontSize: `${Math.round(10 * zoomLevel / 100)}px`
+                  }}
                 >
                   {msg.from}
                 </div>
                 <div className={`max-w-[65%] ${msg.me ? 'items-end' : 'items-start'} flex flex-col`}>
-                  <div className={`text-[10px] font-bold text-slate-400 mb-1 ${msg.me ? 'text-right' : ''}`}>
+                  <div className={`font-bold text-slate-400 mb-1 ${msg.me ? 'text-right' : ''}`} style={{ fontSize: `${Math.round(10 * zoomLevel / 100)}px` }}>
                     {msg.name}
                     {!msg.me && (
                       <span className="font-mono font-normal ml-1 opacity-60">
@@ -293,11 +321,12 @@ function GroupChatPanel({ group, onClose }) {
                     )}
                   </div>
                   <div
-                    className={`px-3 py-2 text-[13px] leading-relaxed break-words ${
+                    className={`px-4 py-3 leading-relaxed break-words ${
                       msg.me
                         ? 'bg-blue-600 text-white rounded-2xl rounded-br-sm'
                         : 'bg-white text-slate-800 border border-slate-200 rounded-2xl rounded-bl-sm'
                     }`}
+                    style={{ fontSize: `${Math.round(16 * zoomLevel / 100)}px` }}
                   >
                     {msg.text}
                   </div>
@@ -354,15 +383,16 @@ function GroupChatPanel({ group, onClose }) {
                 <path d="M13.5 8L8 13.5a4.5 4.5 0 01-6.36-6.36L7.5 1.5a3 3 0 014.24 4.24L5.88 11.1a1.5 1.5 0 01-2.12-2.12l5.66-5.66" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
               </svg>
             </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-400 transition-all" title="Schedule">
-              <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-                <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" strokeWidth="1.3"/>
-                <path d="M5 1.5v2M11 1.5v2M2 6.5h12M5 9.5h2M9 9.5h2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+            <button className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-400 transition-all" title="Voice record">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                <path d="M12 1a3 3 0 00-3 3v7a3 3 0 006 0V4a3 3 0 00-3-3zM4 15a1 1 0 001 1h6a1 1 0 001-1H4a1 1 0 00-1 1z" stroke="currentColor" strokeWidth="1.3"/>
+                <path d="M8 12L6 10l2 2v-2z" fill="currentColor"/>
+                <path d="M12 8a2 2 0 00-2-2H6a2 2 0 00-2 2v4a2 2 0 002 2h4a2 2 0 002-2V8z" stroke="currentColor" strokeWidth="1.3"/>
               </svg>
             </button>
-            <div className="flex-1 flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-full px-3 py-1.5 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+            <div className="flex-1 flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-4 py-3 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
               <input
-                className="flex-1 bg-transparent outline-none text-[13px] text-slate-700 placeholder-slate-400"
+                className="flex-1 bg-transparent outline-none text-[16px] text-slate-700 placeholder-slate-400"
                 placeholder="Type a message..."
                 value={input}
                 onChange={e => setInput(e.target.value)}
@@ -371,9 +401,9 @@ function GroupChatPanel({ group, onClose }) {
             </div>
             <button
               onClick={sendMessage}
-              className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-95 flex items-center justify-center text-white transition-all"
+              className="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-95 flex items-center justify-center text-white transition-all"
             >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
                 <path d="M14 8L2 2l2.5 6L2 14l12-6z" fill="white"/>
               </svg>
             </button>
@@ -444,7 +474,7 @@ function GroupChatPanel({ group, onClose }) {
               <div className="flex-1 min-w-0">
                 <h1 className="text-4xl font-black text-slate-800 tracking-tight">All Groups</h1>
                 <Link
-                  to=""
+                  to="/create-group"
                   className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold px-6 py-3 rounded-xl transition-all"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="flex-shrink-0">
@@ -648,7 +678,7 @@ export default function AllGroups() {
   }, [groups])
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F0F9FF', fontFamily: 'Inter, sans-serif' }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#aed7ea', fontFamily: 'Inter, sans-serif' }}>
       {/* Main content - full width, no header */}
       <div className="flex-1 px-8 py-8 relative z-10">
         
@@ -663,7 +693,7 @@ export default function AllGroups() {
             </div>
             <div className="flex gap-3">
               <Link
-                to="/"
+                to="/create-group"
                 className="flex items-center gap-3 text-white text-xl font-semibold px-8 py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
                 style={{ backgroundColor: '#003097', fontFamily: 'Inter, sans-serif' }}
               >
@@ -780,7 +810,7 @@ export default function AllGroups() {
               <GroupCard
                 key={g.id}
                 group={g}
-                onOpen={grp => navigate(`/groupjoined?groupId=${grp.id}`)}
+                onOpen={grp => navigate(`/group-joined/${grp.id}`)}
               />
             ))}
           </div>

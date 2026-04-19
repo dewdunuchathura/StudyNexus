@@ -1,9 +1,9 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const chatMessageSchema = new mongoose.Schema({
   groupId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'creategroup',
+    ref: 'Group',
     required: true,
     index: true
   },
@@ -129,4 +129,4 @@ chatMessageSchema.index({ messageType: 1, createdAt: -1 });
 
 const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
 
-export default ChatMessage;
+module.exports = ChatMessage;

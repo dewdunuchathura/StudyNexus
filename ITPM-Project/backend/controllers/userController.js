@@ -1,5 +1,6 @@
-const bcrypt  = require("bcryptjs");
-const User    = require("../models/User");
+const bcrypt = require("bcryptjs");
+const User = require("../models/User");
+const { sendError, sendSuccess } = require("./responseHelpers");
 
 // Helper — basic email format check
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -12,41 +13,45 @@ exports.addUser = async (req, res) => {
 
   // Validation
   if (!firstName || !firstName.trim())
-    return res.status(400).json({ message: "First name is required." });
+    return sendError(res, "First name is required.", 400);
   if (!lastName || !lastName.trim())
-    return res.status(400).json({ message: "Last name is required." });
+    return sendError(res, "Last name is required.", 400);
   if (!email || !email.trim())
-    return res.status(400).json({ message: "Email is required." });
+    return sendError(res, "Email is required.", 400);
   if (!isValidEmail(email))
-    return res.status(400).json({ message: "Please enter a valid email address." });
+    return sendError(res, "Please enter a valid email address.", 400);
   if (!password || password.length < 6)
-    return res.status(400).json({ message: "Password must be at least 6 characters." });
+    return sendError(res, "Password must be at least 6 characters.", 400);
   if (!role || !["student", "lecturer", "admin"].includes(role))
-    return res.status(400).json({ message: "Role must be student, lecturer, or admin." });
+    return sendError(res, "Role must be student, lecturer, or admin.", 400);
 
   try {
     // Duplicate email check
     const existing = await User.findOne({ email: email.toLowerCase().trim() });
     if (existing)
-      return res.status(409).json({ message: "A user with this email already exists." });
+      return sendError(res, "A user with this email already exists.", 409);
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
       firstName: firstName.trim(),
-      lastName:  lastName.trim(),
-      email:     email.toLowerCase().trim(),
-      password:  hashedPassword,
+      lastName: lastName.trim(),
+      email: email.toLowerCase().trim(),
+      password: hashedPassword,
       role,
-      status:    status || "Active",
+      status: status || "Active",
     });
 
     const saved = await newUser.save();
     const { password: _pw, ...userWithoutPassword } = saved.toObject();
-    return res.status(201).json({ message: "User added successfully.", user: userWithoutPassword });
+    return sendSuccess(
+      res,
+      { message: "User added successfully.", user: userWithoutPassword },
+      201
+    );
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Error adding user." });
+    return sendError(res, "Error adding user.");
   }
 };
 
@@ -56,10 +61,10 @@ exports.addUser = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select("-password").sort({ createdAt: -1 }).lean();
-    return res.json(users);
+    return sendSuccess(res, users);
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Error fetching users." });
+    return sendError(res, "Error fetching users.");
   }
 };
 
@@ -71,25 +76,28 @@ exports.updateUser = async (req, res) => {
 
   // Validate email if provided
   if (email && !isValidEmail(email))
-    return res.status(400).json({ message: "Please enter a valid email address." });
+    return sendError(res, "Please enter a valid email address.", 400);
 
   try {
     const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found." });
+    if (!user) return sendError(res, "User not found.", 404);
 
     // Only update the fields that were sent
     if (firstName && firstName.trim()) user.firstName = firstName.trim();
-    if (lastName  && lastName.trim())  user.lastName  = lastName.trim();
-    if (email     && email.trim())     user.email     = email.toLowerCase().trim();
+    if (lastName && lastName.trim()) user.lastName = lastName.trim();
+    if (email && email.trim()) user.email = email.toLowerCase().trim();
     if (role      && ["student", "lecturer", "admin"].includes(role)) user.role = role;
-    if (status)                        user.status    = status;
+    if (status) user.status = status;
 
     const updated = await user.save();
     const { password: _pw, ...userWithoutPassword } = updated.toObject();
-    return res.json({ message: "User updated successfully.", user: userWithoutPassword });
+    return sendSuccess(res, {
+      message: "User updated successfully.",
+      user: userWithoutPassword,
+    });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Error updating user." });
+    return sendError(res, "Error updating user.");
   }
 };
 
@@ -99,12 +107,12 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found." });
+    if (!user) return sendError(res, "User not found.", 404);
 
     await user.deleteOne();
-    return res.json({ message: "User deleted successfully." });
+    return sendSuccess(res, { message: "User deleted successfully." });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Error deleting user." });
+    return sendError(res, "Error deleting user.");
   }
 };

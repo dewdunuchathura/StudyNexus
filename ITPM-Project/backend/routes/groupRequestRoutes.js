@@ -1,11 +1,11 @@
-import express from 'express';
-import {
+const express = require('express');
+const {
   requestToJoinGroup,
   getGroupRequests,
   acceptGroupRequest,
   rejectGroupRequest,
   getUserRequests
-} from '../controllers/groupRequestController.js';
+} = require('../controllers/groupRequestController');
 
 const router = express.Router();
 
@@ -25,4 +25,4 @@ router.route('/:groupId/requests/:requestId/reject')
 router.route('/users/:userId/requests')
   .get(getUserRequests);
 
-export default router;
+module.exports = router;
