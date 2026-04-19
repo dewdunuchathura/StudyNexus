@@ -17,11 +17,28 @@ const getAdminRoute = (email) => {
     return routes[email?.toLowerCase()] || "/home"; // unmapped admins go to /home
 };
 
+// ── Admin email → dashboard route mapping ─────────────────────────────────
+// Add each admin's email and their dashboard route here.
+const getAdminRoute = (email) => {
+    const routes = {
+        "dilsharakrishan@gmail.com": "/users",          // Krishan  — User Management
+        "nethmimindula@gmail.com":   "/admin",           // Mindula  — admin.jsx
+        "pamudithajayasena@gmail.com": "/admindashboard",  // Pamuditha — Admindashboard.jsx
+    };
+    return routes[email?.toLowerCase()] || "/home"; // unmapped admins go to /home
+};
+
 const Login = () => {
     const { login, user } = useAuth();
     const navigate = useNavigate();
 
-    // Removed automatic redirect - users should stay on login page if they navigate here manually
+    useEffect(() => {
+        if (user) {
+            const isAdmin = user.role === "admin" || user.role === "lecturer";
+            const dest = isAdmin ? getAdminRoute(user.email) : "/home";
+            navigate(dest);
+        }
+    }, [user, navigate]);
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -160,3 +177,4 @@ const Login = () => {
 };
 
 export default Login;
+

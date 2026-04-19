@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import '../styles/home.css';
 
+/* --- Data --- */
 /* --- Data --- */
 const FEATURES = [
   {
@@ -165,6 +165,15 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    const onScroll = () => {
+      if (!navRef.current) return;
+      navRef.current.classList.toggle('scrolled', window.scrollY > 20);
+    };
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
     <>
       <nav className="hp-nav" ref={navRef}>
@@ -177,11 +186,14 @@ export default function HomePage() {
 
         <ul className="nav-links">
           <li><a href="#features">Features</a></li>
+          <li><a href="#how-it-works">How it Works</a></li>
+          <li><a href="#roles">Roles</a></li>
+          <li><a href="#collaboration">Collaboration</a></li>
         </ul>
 
         <div className="nav-actions">
-          <Link to="/login" className="btn-ghost">Sign In</Link>
-          <Link to="/register" className="btn-primary">Sign Up</Link>
+          <a href="/login" className="btn-ghost">Sign In</a>
+          <a href="/register" className="btn-primary">Sign Up →</a>
         </div>
       </nav>
 
@@ -206,8 +218,8 @@ export default function HomePage() {
               progress � all in one place.
             </p>
             <div className="hero-actions">
-              <Link to="/register" className="btn-hero-primary">Start Learning Now</Link>
-              <a href="#how-it-works" className="btn-hero-ghost">See How It Works</a>
+              <a href="/register" className="btn-hero-primary">Start Learning Now</a>
+              <a href="#how-it-works" className="btn-hero-ghost">→ See How It Works</a>
             </div>
             <div className="hero-stats">
               {[
@@ -324,6 +336,7 @@ export default function HomePage() {
                   {b}
                 </div>
               ))}
+            </div>
             </div>
           </div>
         </div>
@@ -468,6 +481,13 @@ export default function HomePage() {
                 <p className="testi-quote">"{t.quote}"</p>
                 <div className="testi-author">
                   <div className="testi-avatar">{t.initials}</div>
+          <div className="testimonials-grid">
+            {TESTIMONIALS.map((t) => (
+              <div className="testi-card fade-up" key={t.name}>
+                <div className="testi-stars">{t.stars}</div>
+                <p className="testi-quote">"{t.quote}"</p>
+                <div className="testi-author">
+                  <div className="testi-avatar">{t.initials}</div>
                   <div>
                     <div className="testi-name">{t.name}</div>
                     <div className="testi-role-label">{t.role}</div>
@@ -490,7 +510,7 @@ export default function HomePage() {
             faster, collaborate smarter, and achieve more.
           </p>
           <div className="cta-buttons">
-            <Link to="/register" className="btn-hero-primary">Get Started Free</Link>
+            <a href="/register" className="btn-hero-primary">Get Started Free</a>
             <a href="#features" className="btn-hero-ghost">View Features</a>
           </div>
         </div>
