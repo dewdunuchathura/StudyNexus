@@ -13,14 +13,19 @@ const Leaderboard  = React.lazy(() => import("./pages/Leaderboard"));
 const HomePage     = React.lazy(() => import("./pages/HomePage"));
 const Home2        = React.lazy(() => import("./pages/Home2"));
 
-// Mindula — Resource pages
+// Dewdunu — Feature pages
+const AISummary         = React.lazy(() => import("./pages/AISummary"));
+const SummaryPage       = React.lazy(() => import("./pages/SummaryPage"));
+const RevisionNotesPage = React.lazy(() => import("./pages/RevisionNotesPage"));
+const QuestionsPage     = React.lazy(() => import("./pages/QuestionsPage"));
+
+// Mindula & Pamuditha — Admin Dashboards
 const AcademicResources = React.lazy(() => import("./pages/AcademicResources"));
 const AdminDashboard    = React.lazy(() => import("./pages/AdminDashboard"));
 
 // Admin / Lecturer only — lazy loaded
 const UserManagement = React.lazy(() => import("./pages/UserManagement"));
 const Admin          = React.lazy(() => import("./pages/admin"));           // Mindula's admin
-const Admindashboard = React.lazy(() => import("./pages/Admindashboard")); // Pamuditha's dashboard
 
 const LoadingFallback = () => (
   <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
@@ -100,15 +105,22 @@ function App() {
                 }
               />
 
-              {/* Pamuditha — Admindashboard.jsx */}
+              {/* Pamuditha — AdminDashboard.jsx */}
               <Route
                 path="/admindashboard"
                 element={
                   <RoleProtectedRoute allowedRoles={["admin", "lecturer"]}>
-                    <Admindashboard />
+                    <AdminDashboard />
                   </RoleProtectedRoute>
                 }
               />
+
+              {/* Dewdunu — Feature Pages */}
+              <Route path="/home2" element={<Home2 />} />
+              <Route path="/ai-summary" element={<AISummary />} />
+              <Route path="/summary" element={<SummaryPage />} />
+              <Route path="/revision-notes" element={<RevisionNotesPage />} />
+              <Route path="/questions" element={<QuestionsPage />} />
 
               {/* Home Page */}
               <Route path="/" element={<HomePage />} />

@@ -26,7 +26,7 @@ const AcademicResources = () => {
   useEffect(() => {
     const fetchResources = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:5003/api/resources');
+        const response = await fetch('http://127.0.0.1:5000/api/resources');
         const data = await response.json();
         
         if (data.success) {
@@ -66,7 +66,7 @@ const AcademicResources = () => {
         return;
       }
       
-      const response = await fetch(`http://127.0.0.1:5003/api/resources/${resourceId}`, {
+      const response = await fetch(`http://127.0.0.1:5000/api/resources/${resourceId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ const AcademicResources = () => {
       const description = prompt('Please provide additional details (optional):');
       
       try {
-        const response = await fetch(`http://127.0.0.1:5003/api/resources/${resourceId}/reports`, {
+        const response = await fetch(`http://127.0.0.1:5000/api/resources/${resourceId}/reports`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -166,7 +166,7 @@ const AcademicResources = () => {
     const commentText = newComments[resourceId];
     if (commentText && commentText.trim()) {
       try {
-        const response = await fetch(`http://127.0.0.1:5003/api/resources/${resourceId}/comments`, {
+        const response = await fetch(`http://127.0.0.1:5000/api/resources/${resourceId}/comments`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -211,7 +211,7 @@ const AcademicResources = () => {
   const handleViewPDF = (resource) => {
     if (resource.filePath) {
       setSelectedPDF({
-        url: `http://127.0.0.1:5003/${resource.filePath}`,
+        url: `http://127.0.0.1:5000/${resource.filePath}`,
         title: resource.title
       });
       setShowPDFModal(true);
@@ -294,7 +294,7 @@ const AcademicResources = () => {
         formDataToSend.append('pdfFile', formData.pdfFile);
       }
       
-      const response = await fetch('http://127.0.0.1:5003/api/resources', {
+      const response = await fetch('http://127.0.0.1:5000/api/resources', {
         method: 'POST',
         body: formDataToSend // Don't set Content-Type header, let browser set it for FormData
       });

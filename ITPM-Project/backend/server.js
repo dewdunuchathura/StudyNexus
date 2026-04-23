@@ -13,6 +13,7 @@ const userRoutes      = require('./routes/userRoutes');
 const testRoutes      = require('./routes/testRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const goalRoutes      = require('./routes/goalRoutes');
+const lectureSummaryRoutes = require('./routes/lectureSummaryRoutes');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -60,6 +61,7 @@ app.use('/user',          userRoutes);        // Krishan
 app.use('/api',           testRoutes);        // Krishan
 app.use('/api',           dashboardRoutes);   // Krishan
 app.use('/api/goals',     goalRoutes);        // Krishan
+app.use('/api/lecture-summary', lectureSummaryRoutes); // Dewdunu
 
 // ── Health check ───────────────────────────────────────
 app.get('/api/health', (req, res) => {
