@@ -13,7 +13,7 @@ const Register = () => {
 
     useEffect(() => {
         if (user) {
-            navigate("/dashboard");
+            navigate("/home2");
         }
     }, [user, navigate]);
 
@@ -69,9 +69,9 @@ const Register = () => {
 
         setLoading(true);
         try {
-            // We omit confirmPassword when sending to the backend
             const { confirmPassword, ...dataToSubmit } = formData;
             await register(dataToSubmit);
+            // After registration, redirect to login so they can authenticate and go to home2
             navigate("/login");
         } catch (err) {
             const msg = err.response?.data?.message
@@ -92,7 +92,7 @@ const Register = () => {
             {/* Left Banner */}
             <div className="auth-banner">
                 <div className="auth-banner-content">
-                    <h1>Join EduCore</h1>
+                    <h1>Join StudyNexus</h1>
                     <p>Create your account today and start managing your academic journey with a modern and secure experience.</p>
                 </div>
             </div>
