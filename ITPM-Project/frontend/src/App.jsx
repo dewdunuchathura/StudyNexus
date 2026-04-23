@@ -23,9 +23,16 @@ const QuestionsPage     = React.lazy(() => import("./pages/QuestionsPage"));
 const AcademicResources = React.lazy(() => import("./pages/AcademicResources"));
 const AdminDashboard    = React.lazy(() => import("./pages/AdminDashboard"));
 
+// Pamuditha — Group Features
+const CreateGroup       = React.lazy(() => import("./pages/CreateGroup"));
+const AllGroups         = React.lazy(() => import("./pages/AllGroups"));
+const GroupDetail       = React.lazy(() => import("./pages/GroupDetail"));
+const GroupJoined       = React.lazy(() => import("./pages/GroupJoined"));
+const AdminReports      = React.lazy(() => import("./pages/AdminReports"));
+
 // Admin / Lecturer only — lazy loaded
 const UserManagement = React.lazy(() => import("./pages/UserManagement"));
-const Admin          = React.lazy(() => import("./pages/admin"));           // Mindula's admin
+const Admin          = React.lazy(() => import("./pages/admin"));
 
 const LoadingFallback = () => (
   <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
@@ -72,6 +79,40 @@ function App() {
                 }
               />
 
+              {/* Pamuditha — Group Routes */}
+              <Route
+                path="/create-group"
+                element={
+                  <ProtectedRoute>
+                    <CreateGroup />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/groups"
+                element={
+                  <ProtectedRoute>
+                    <AllGroups />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/group/:id"
+                element={
+                  <ProtectedRoute>
+                    <GroupDetail />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/group-joined/:id"
+                element={
+                  <ProtectedRoute>
+                    <GroupJoined />
+                  </ProtectedRoute>
+                }
+              />
+
               {/* Mindula — Academic Resources (public) */}
               <Route path="/resources" element={<AcademicResources />} />
 
@@ -85,7 +126,16 @@ function App() {
                 }
               />
 
-              {/* Mindula — admin.jsx */}
+              {/* Admin / Reports */}
+              <Route
+                path="/admin/reports"
+                element={
+                  <RoleProtectedRoute allowedRoles={["admin"]}>
+                    <AdminReports />
+                  </RoleProtectedRoute>
+                }
+              />
+
               <Route
                 path="/admin"
                 element={
@@ -95,7 +145,6 @@ function App() {
                 }
               />
 
-              {/* Mindula — AdminDashboard.jsx */}
               <Route
                 path="/admin-dashboard"
                 element={
@@ -105,7 +154,6 @@ function App() {
                 }
               />
 
-              {/* Pamuditha — AdminDashboard.jsx */}
               <Route
                 path="/admindashboard"
                 element={

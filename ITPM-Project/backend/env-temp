@@ -1,0 +1,5 @@
+PORT=5000
+MONGO_URI=mongodb+srv://admin:2003511@cluster1.fmllswt.mongodb.net/itpmDB
+NODE_ENV=development
+JWT_SECRET=supersecret123
+JWT_EXPIRE=30d

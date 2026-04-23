@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import '../styles/home.css';
 
+/* --- Data --- */
 /* --- Data --- */
 const FEATURES = [
   {
@@ -164,6 +166,15 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    const onScroll = () => {
+      if (!navRef.current) return;
+      navRef.current.classList.toggle('scrolled', window.scrollY > 20);
+    };
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
     <>
       <nav className="hp-nav" ref={navRef}>
@@ -183,7 +194,7 @@ export default function HomePage() {
 
         <div className="nav-actions">
           <Link to="/login" className="btn-ghost">Sign In</Link>
-          <Link to="/register" className="btn-primary">Sign Up ?</Link>
+          <Link to="/register" className="btn-primary">Sign Up →</Link>
         </div>
       </nav>
 
@@ -209,7 +220,7 @@ export default function HomePage() {
             </p>
             <div className="hero-actions">
               <Link to="/register" className="btn-hero-primary">Start Learning Now</Link>
-              <a href="#how-it-works" className="btn-hero-ghost">? See How It Works</a>
+              <a href="#how-it-works" className="btn-hero-ghost">→ See How It Works</a>
             </div>
             <div className="hero-stats">
               {[
@@ -326,6 +337,7 @@ export default function HomePage() {
                   {b}
                 </div>
               ))}
+            </div>
             </div>
           </div>
         </div>
@@ -463,6 +475,13 @@ export default function HomePage() {
             <div className="section-label">Student Stories</div>
             <h2 className="section-title">What our community is saying</h2>
           </div>
+          <div className="testimonials-grid">
+            {TESTIMONIALS.map((t) => (
+              <div className="testi-card fade-up" key={t.name}>
+                <div className="testi-stars">{t.stars}</div>
+                <p className="testi-quote">"{t.quote}"</p>
+                <div className="testi-author">
+                  <div className="testi-avatar">{t.initials}</div>
           <div className="testimonials-grid">
             {TESTIMONIALS.map((t) => (
               <div className="testi-card fade-up" key={t.name}>

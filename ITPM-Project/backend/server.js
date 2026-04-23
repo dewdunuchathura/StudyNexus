@@ -7,13 +7,18 @@ const path = require('path');
 const connectDB = require('./config/db');
 
 // ── Import routes ──────────────────────────────────────
-const resourceRoutes  = require('./routes/resourceRoutes');
-const authRoutes      = require('./routes/authRoutes');
-const userRoutes      = require('./routes/userRoutes');
-const testRoutes      = require('./routes/testRoutes');
-const dashboardRoutes = require('./routes/dashboardRoutes');
-const goalRoutes      = require('./routes/goalRoutes');
+const resourceRoutes      = require('./routes/resourceRoutes');
+const authRoutes          = require('./routes/authRoutes');
+const userRoutes          = require('./routes/userRoutes');
+const testRoutes          = require('./routes/testRoutes');
+const dashboardRoutes     = require('./routes/dashboardRoutes');
+const goalRoutes          = require('./routes/goalRoutes');
 const lectureSummaryRoutes = require('./routes/lectureSummaryRoutes');
+
+// Pamuditha's new routes
+const groupRoutes         = require('./routes/groupRoutes');
+const groupRequestRoutes  = require('./routes/groupRequestRoutes');
+const chatRoutes           = require('./routes/chat');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -55,13 +60,18 @@ app.use((req, res, next) => {
 });
 
 // ── Routes ─────────────────────────────────────────────
-app.use('/api/resources', resourceRoutes);   // Mindula
-app.use('/api/auth',      authRoutes);        // Krishan
-app.use('/user',          userRoutes);        // Krishan
-app.use('/api',           testRoutes);        // Krishan
-app.use('/api',           dashboardRoutes);   // Krishan
-app.use('/api/goals',     goalRoutes);        // Krishan
-app.use('/api/lecture-summary', lectureSummaryRoutes); // Dewdunu
+app.use('/api/auth',           authRoutes);
+app.use('/api/users',          userRoutes);
+app.use('/api/resources',      resourceRoutes);
+app.use('/api/lecture-summary', lectureSummaryRoutes);
+app.use('/api/goals',          goalRoutes);
+app.use('/api',                testRoutes);
+app.use('/api',                dashboardRoutes);
+
+// Pamuditha's routes
+app.use('/api/groups',         groupRoutes);
+app.use('/api/group-requests', groupRequestRoutes);
+app.use('/api/chat',           chatRoutes);
 
 // ── Health check ───────────────────────────────────────
 app.get('/api/health', (req, res) => {
@@ -69,6 +79,25 @@ app.get('/api/health', (req, res) => {
     success: true,
     message: 'Backend is running',
     mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
+});
+
+// ── Error handling ───────────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error(err);
+
+  if (err?.name === "MulterError") {
+    return res.status(400).json({ ok: false, message: err.message });
+  }
+
+  if (/Only PDF and PPTX files are supported/i.test(err.message || "")) {
+    return res.status(400).json({ ok: false, message: err.message });
+  }
+
+  res.status(500).json({ 
+    ok: false, 
+    message: err.message || "Something went wrong!",
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
 
