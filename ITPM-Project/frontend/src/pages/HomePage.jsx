@@ -3,56 +3,55 @@ import { Link } from 'react-router-dom';
 import '../styles/home.css';
 
 /* --- Data --- */
-/* --- Data --- */
 const FEATURES = [
   {
-    icon: '??', bg: '#dbeafe', color: '#2563eb',
+    icon: '🚀', bg: '#dbeafe', color: '#2563eb',
     title: 'AI Lecture Summaries',
     desc: 'Upload PDFs, PowerPoints, or Word docs and get intelligent AI-generated summaries with key concepts and bullet-point revision notes instantly.',
   },
   {
-    icon: '??', bg: '#dcfce7', color: '#16a34a',
+    icon: '👥', bg: '#dcfce7', color: '#16a34a',
     title: 'Study Group Management',
     desc: 'Create academic groups, send and manage join requests, assign group leader roles, and post announcements to your team effortlessly.',
   },
   {
-    icon: '??', bg: '#fce7f3', color: '#be185d',
+    icon: '📂', bg: '#fce7f3', color: '#be185d',
     title: 'Resource Sharing Hub',
     desc: 'Upload and share study materials within groups, categorized by subject or module, with interactive commenting and interaction tools.',
   },
   {
-    icon: '??', bg: '#fef3c7', color: '#b45309',
+    icon: '🏆', bg: '#fef3c7', color: '#b45309',
     title: 'Competitive Leaderboard',
     desc: 'Earn points for completed tasks, climb the academic ranks, and stay motivated through gamified peer competition across your institution.',
   },
   {
-    icon: '???', bg: '#ede9fe', color: '#7c3aed',
+    icon: '🛡️', bg: '#ede9fe', color: '#7c3aed',
     title: 'Enterprise Security',
     desc: 'JWT authentication, robust password hashing, and granular role-based permissions ensure your academic data stays private and protected.',
   },
   {
-    icon: '??', bg: '#e0f2fe', color: '#0284c7',
+    icon: '📊', bg: '#e0f2fe', color: '#0284c7',
     title: 'Real-time Analytics',
     desc: 'Stay informed with instant visual metrics, progress bars, and high-level academic overviews to monitor your performance at a glance.',
   },
 ];
 
 const AI_STEPS = [
-  { num: '01', title: 'Upload Your Lecture Material', desc: 'Supports PDF, PPTX, DOCX � drag and drop or click to upload from any device.' },
+  { num: '01', title: 'Upload Your Lecture Material', desc: 'Supports PDF, PPTX, DOCX – drag and drop or click to upload from any device.' },
   { num: '02', title: 'AI Processes & Extracts Key Concepts', desc: 'Our model analyzes structure, headings, and content to identify what matters most.' },
   { num: '03', title: 'Review, Save & Download', desc: 'Get a summary card with bullet-point notes you can save, search, or export instantly.' },
 ];
 
 const HOW_STEPS = [
-  { icon: '??', title: 'Create Your Account', desc: 'Register as a Student, Lecturer, or Admin. Verify your email and set up your academic profile in under 2 minutes.' },
-  { icon: '??', title: 'Upload Study Materials', desc: 'Drop in lecture slides, PDFs, or notes. Our AI instantly processes and generates smart summaries for you.' },
-  { icon: '??', title: 'Join or Create Groups', desc: 'Find study groups by module or subject, send a join request, and start sharing resources with peers.' },
-  { icon: '??', title: 'Track & Compete', desc: 'Monitor your progress dashboard, climb the leaderboard, and hit your academic goals with AI-powered insights.' },
+  { icon: '📝', title: 'Create Your Account', desc: 'Register as a Student, Lecturer, or Admin. Verify your email and set up your academic profile in under 2 minutes.' },
+  { icon: '📤', title: 'Upload Study Materials', desc: 'Drop in lecture slides, PDFs, or notes. Our AI instantly processes and generates smart summaries for you.' },
+  { icon: '🤝', title: 'Join or Create Groups', desc: 'Find study groups by module or subject, send a join request, and start sharing resources with peers.' },
+  { icon: '📈', title: 'Track & Compete', desc: 'Monitor your progress dashboard, climb the leaderboard, and hit your academic goals with AI-powered insights.' },
 ];
 
 const ROLES = [
   {
-    variant: 'student', emoji: '??', title: 'For Students', checkClass: 'blue',
+    variant: 'student', emoji: '🎓', title: 'For Students', checkClass: 'blue',
     desc: 'Focus purely on your studies without administrative distractions. Your personalized academic hub awaits.',
     features: [
       'Manage personal study goals & deadlines',
@@ -63,7 +62,7 @@ const ROLES = [
     ],
   },
   {
-    variant: 'lecturer', emoji: '?????', title: 'For Lecturers', checkClass: 'green',
+    variant: 'lecturer', emoji: '👨‍🏫', title: 'For Lecturers', checkClass: 'green',
     desc: 'Monitor student progress and manage academic cohorts effortlessly, all from one streamlined dashboard.',
     features: [
       'View global student leaderboard',
@@ -74,7 +73,7 @@ const ROLES = [
     ],
   },
   {
-    variant: 'admin', emoji: '???', title: 'For Admins', checkClass: 'purple',
+    variant: 'admin', emoji: '🔑', title: 'For Admins', checkClass: 'purple',
     desc: 'Full systematic control over users, security, and access rules across the entire institution.',
     features: [
       'Edit, update, or remove user accounts',
@@ -87,23 +86,23 @@ const ROLES = [
 ];
 
 const GROUPS = [
-  { icon: '??', bg: 'g-blue', name: 'Advanced Algorithms Study Group', meta: '14 members � CS Module 3', badge: 'Active', badgeClass: 'badge-active' },
-  { icon: '??', bg: 'g-green', name: 'Bioinformatics Research Circle', meta: '8 members � BIO Module 5', badge: 'New', badgeClass: 'badge-new' },
-  { icon: '??', bg: 'g-amber', name: 'Data Structures & Databases', meta: '20 members � IT Module 2', badge: 'Full', badgeClass: 'badge-full' },
-  { icon: '??', bg: 'g-pink', name: 'UI/UX Design Collective', meta: '11 members � DES Module 1', badge: 'Active', badgeClass: 'badge-active' },
+  { icon: '💻', bg: 'g-blue', name: 'Advanced Algorithms Study Group', meta: '14 members • CS Module 3', badge: 'Active', badgeClass: 'badge-active' },
+  { icon: '🧬', bg: 'g-green', name: 'Bioinformatics Research Circle', meta: '8 members • BIO Module 5', badge: 'New', badgeClass: 'badge-new' },
+  { icon: '📊', bg: 'g-amber', name: 'Data Structures & Databases', meta: '20 members • IT Module 2', badge: 'Full', badgeClass: 'badge-full' },
+  { icon: '🎨', bg: 'g-pink', name: 'UI/UX Design Collective', meta: '11 members • DES Module 1', badge: 'Active', badgeClass: 'badge-active' },
 ];
 
 const COLLAB_FEATURES = [
-  { icon: '??', title: 'Group Announcements & Discussion Boards', desc: 'Post updates, pin important messages, and keep every member in sync with a built-in group chat system.' },
-  { icon: '??', title: 'Managed Access & Role Assignment', desc: 'Group leaders can accept or reject member requests, assign roles, and control who sees what.' },
-  { icon: '??', title: 'Shared Resource Library', desc: 'Every group gets its own resource hub where members can upload, comment, and organize files by module.' },
+  { icon: '📢', title: 'Group Announcements & Discussion Boards', desc: 'Post updates, pin important messages, and keep every member in sync with a built-in group chat system.' },
+  { icon: '👮', title: 'Managed Access & Role Assignment', desc: 'Group leaders can accept or reject member requests, assign roles, and control who sees what.' },
+  { icon: '📚', title: 'Shared Resource Library', desc: 'Every group gets its own resource hub where members can upload, comment, and organize files by module.' },
 ];
 
 const RESOURCES = [
-  { icon: '??', title: 'Upload Materials', desc: 'Share lecture notes, past papers, and study guides with your group or the wider platform.' },
-  { icon: '???', title: 'Categorized by Module', desc: 'Resources are tagged by subject and module so finding what you need takes seconds, not minutes.' },
-  { icon: '??', title: 'Comment & Interact', desc: 'Ask questions, leave feedback, and discuss shared materials directly within the platform.' },
-  { icon: '??', title: 'Content Moderation', desc: 'Report inappropriate content and let admins maintain a safe, productive academic environment.' },
+  { icon: '📄', title: 'Upload Materials', desc: 'Share lecture notes, past papers, and study guides with your group or the wider platform.' },
+  { icon: '🏷️', title: 'Categorized by Module', desc: 'Resources are tagged by subject and module so finding what you need takes seconds, not minutes.' },
+  { icon: '💬', title: 'Comment & Interact', desc: 'Ask questions, leave feedback, and discuss shared materials directly within the platform.' },
+  { icon: '🚩', title: 'Content Moderation', desc: 'Report inappropriate content and let admins maintain a safe, productive academic environment.' },
 ];
 
 const STATS = [
@@ -115,27 +114,27 @@ const STATS = [
 
 const TESTIMONIALS = [
   {
-    initials: 'AK', stars: '?????',
-    quote: 'The AI summary feature is a game-changer. I upload my lecturer\'s slides and get study-ready notes in under 30 seconds. My GPA improved noticeably after using EduNexus.',
+    initials: 'AK', stars: '⭐⭐⭐⭐⭐',
+    quote: "The AI summary feature is a game-changer. I upload my lecturer's slides and get study-ready notes in under 30 seconds. My GPA improved noticeably after using EduNexus.",
     name: 'Ashan Karunaratne', role: 'Computer Science Student, Year 3',
   },
   {
-    initials: 'NP', stars: '?????',
-    quote: 'As a lecturer, tracking student progress has never been this effortless. I can see who\'s engaged and who needs extra support � all in real time.',
+    initials: 'NP', stars: '⭐⭐⭐⭐⭐',
+    quote: 'As a lecturer, tracking student progress has never been this effortless. I can see who\'s engaged and who needs extra support – all in real time.',
     name: 'Dr. Nirosha Perera', role: 'Senior Lecturer, Faculty of IT',
   },
   {
-    initials: 'SM', stars: '?????',
-    quote: 'Our study group uses EduNexus to share notes and coordinate before every exam. The group resource hub keeps everything organized � no more messy WhatsApp files!',
+    initials: 'SM', stars: '⭐⭐⭐⭐⭐',
+    quote: 'Our study group uses EduNexus to share notes and coordinate before every exam. The group resource hub keeps everything organized – no more messy WhatsApp files!',
     name: 'Sanduni Madushan', role: 'Business IT Student, Year 2',
   },
 ];
 
 const AI_BULLETS = [
-  'Normalization reduces data redundancy by organizing tables into defined normal forms (1NF ? 3NF).',
+  'Normalization reduces data redundancy by organizing tables into defined normal forms (1NF – 3NF).',
   'A primary key uniquely identifies each row; foreign keys enforce referential integrity between relations.',
   'ACID properties (Atomicity, Consistency, Isolation, Durability) guarantee transaction reliability.',
-  'Indexing improves query speed but increases write overhead � balance is critical for optimization.',
+  'Indexing improves query speed but increases write overhead – balance is critical for optimization.',
 ];
 
 export default function HomePage() {
@@ -166,23 +165,12 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  useEffect(() => {
-    const onScroll = () => {
-      if (!navRef.current) return;
-      navRef.current.classList.toggle('scrolled', window.scrollY > 20);
-    };
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
   return (
     <>
       <nav className="hp-nav" ref={navRef}>
         <a href="/" className="nav-logo">
-          <div className="nav-logo-icon">??</div>
-          <span className="nav-logo-text">
-            Edu<em>Nexus</em>
-          </span>
+          <div className="nav-logo-icon">🚀</div>
+          <span className="nav-logo-text">Edu<em>Nexus</em></span>
         </a>
 
         <ul className="nav-links">
@@ -216,7 +204,7 @@ export default function HomePage() {
             <p className="hero-sub">
               The intelligent academic platform that helps university students upload
               lecture materials, generate AI summaries, form study groups, and track
-              progress � all in one place.
+              progress – all in one place.
             </p>
             <div className="hero-actions">
               <Link to="/register" className="btn-hero-primary">Start Learning Now</Link>
@@ -258,10 +246,10 @@ export default function HomePage() {
                 ))}
               </div>
               <div className="ai-pill">
-                <div className="ai-pill-icon">??</div>
+                <div className="ai-pill-icon">🤖</div>
                 <div className="ai-pill-text">
                   <strong>AI Summary Ready</strong>
-                  "Database Normalization" � 4 key points extracted
+                  "Database Normalization" • 4 key points extracted
                 </div>
               </div>
             </div>
@@ -301,7 +289,7 @@ export default function HomePage() {
             <h2 className="section-title">From lecture file to smart notes in seconds</h2>
             <p className="section-sub">
               Our AI engine reads your uploaded materials and distills them into clean,
-              actionable study content so you can focus on understanding � not note-taking.
+              actionable study content so you can focus on understanding – not note-taking.
             </p>
             <div className="ai-steps">
               {AI_STEPS.map((s) => (
@@ -318,7 +306,7 @@ export default function HomePage() {
 
           <div className="ai-demo-card fade-up">
             <div className="upload-zone">
-              <div className="upload-icon">??</div>
+              <div className="upload-icon">📁</div>
               <div className="upload-text">
                 <strong>Drag & drop</strong> your lecture file here
                 <br />or click to browse
@@ -330,14 +318,13 @@ export default function HomePage() {
               </div>
             </div>
             <div className="ai-output">
-              <div className="ai-output-label">? AI-Generated Summary � Database Systems</div>
+              <div className="ai-output-label">📔 AI-Generated Summary • Database Systems</div>
               {AI_BULLETS.map((b, i) => (
                 <div className="ai-bullet" key={i}>
-                  <span className="ai-bullet-arrow">?</span>
+                  <span className="ai-bullet-arrow">→</span>
                   {b}
                 </div>
               ))}
-            </div>
             </div>
           </div>
         </div>
@@ -349,7 +336,7 @@ export default function HomePage() {
             <div className="section-label">How It Works</div>
             <h2 className="section-title">Get started in four simple steps</h2>
             <p className="section-sub">
-              From signup to full academic collaboration � EduNexus gets you productive
+              From signup to full academic collaboration – EduNexus gets you productive
               in minutes.
             </p>
           </div>
@@ -374,7 +361,7 @@ export default function HomePage() {
             <div className="section-label">Built for Everyone</div>
             <h2 className="section-title">A platform that adapts to your role</h2>
             <p className="section-sub">
-              Whether you\'re learning, teaching, or managing � EduNexus is tailored
+              Whether you're learning, teaching, or managing – EduNexus is tailored
               to your exact needs.
             </p>
           </div>
@@ -387,7 +374,7 @@ export default function HomePage() {
                 <ul className="role-features">
                   {r.features.map((f) => (
                     <li key={f}>
-                      <span className={`check ${r.checkClass}`}>?</span>
+                      <span className={`check ${r.checkClass}`}>✓</span>
                       {f}
                     </li>
                   ))}
@@ -442,7 +429,7 @@ export default function HomePage() {
             <div className="section-label">Academic Resources</div>
             <h2 className="section-title">Share knowledge. Grow together.</h2>
             <p className="section-sub">
-              A centralized hub for all your academic materials � organized, searchable,
+              A centralized hub for all your academic materials – organized, searchable,
               and always at your fingertips.
             </p>
           </div>
@@ -482,13 +469,6 @@ export default function HomePage() {
                 <p className="testi-quote">"{t.quote}"</p>
                 <div className="testi-author">
                   <div className="testi-avatar">{t.initials}</div>
-          <div className="testimonials-grid">
-            {TESTIMONIALS.map((t) => (
-              <div className="testi-card fade-up" key={t.name}>
-                <div className="testi-stars">{t.stars}</div>
-                <p className="testi-quote">"{t.quote}"</p>
-                <div className="testi-author">
-                  <div className="testi-avatar">{t.initials}</div>
                   <div>
                     <div className="testi-name">{t.name}</div>
                     <div className="testi-role-label">{t.role}</div>
@@ -521,7 +501,7 @@ export default function HomePage() {
         <div className="footer-inner">
           <div className="footer-brand">
             <a href="/" className="nav-logo">
-              <div className="nav-logo-icon">??</div>
+              <div className="nav-logo-icon">🚀</div>
               <span className="nav-logo-text">Edu<em>Nexus</em></span>
             </a>
             <p>
@@ -562,9 +542,9 @@ export default function HomePage() {
         </div>
 
         <div className="footer-bottom">
-          <span>� 2026 EduNexus. All rights reserved. Built with MERN Stack.</span>
+          <span>© 2026 EduNexus. All rights reserved. Built with MERN Stack.</span>
           <div className="footer-socials">
-            {["??", "in", "gh", "@"].map((icon) => (
+            {["🐦", "in", "gh", "@"].map((icon) => (
               <a href="#" className="social-btn" key={icon}>{icon}</a>
             ))}
           </div>
