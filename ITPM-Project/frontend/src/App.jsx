@@ -1,69 +1,126 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import AcademicResources from './pages/AcademicResources.jsx';
-import AdminDashboard from './pages/AdminDashboard.jsx';
-import HomePage from './pages/HomePage.jsx';
+import React, { Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import RoleProtectedRoute from "./components/RoleProtectedRoute";
+import Layout from "./components/Layout";
 
-export default function App() {
+// Pages — lazy loaded for better performance
+const Login        = React.lazy(() => import("./pages/Login"));
+const Register     = React.lazy(() => import("./pages/Register"));
+const Dashboard    = React.lazy(() => import("./pages/Dashboard"));
+const Leaderboard  = React.lazy(() => import("./pages/Leaderboard"));
+const HomePage     = React.lazy(() => import("./pages/HomePage"));
+const Home2        = React.lazy(() => import("./pages/Home2"));
+
+// Mindula — Resource pages
+const AcademicResources = React.lazy(() => import("./pages/AcademicResources"));
+const AdminDashboard    = React.lazy(() => import("./pages/AdminDashboard"));
+
+// Admin / Lecturer only — lazy loaded
+const UserManagement = React.lazy(() => import("./pages/UserManagement"));
+const Admin          = React.lazy(() => import("./pages/admin"));           // Mindula's admin
+const Admindashboard = React.lazy(() => import("./pages/Admindashboard")); // Pamuditha's dashboard
+
+const LoadingFallback = () => (
+  <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
+    Loading...
+  </div>
+);
+
+function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/resources" element={<AcademicResourcesPage />} />
-        <Route path="/admin" element={<AdminDashboardPage />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Layout>
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/login"    element={<Login />} />
+              <Route path="/register" element={<Register />} />
+
+              {/* Authenticated — any logged-in user */}
+              <Route
+                path="/home"
+                element={
+                  <ProtectedRoute>
+                    <Home2 />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/leaderboard"
+                element={
+                  <ProtectedRoute>
+                    <Leaderboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Mindula — Academic Resources (public) */}
+              <Route path="/resources" element={<AcademicResources />} />
+
+              {/* Krishan — User Management */}
+              <Route
+                path="/users"
+                element={
+                  <RoleProtectedRoute allowedRoles={["admin", "lecturer"]}>
+                    <UserManagement />
+                  </RoleProtectedRoute>
+                }
+              />
+
+              {/* Mindula — admin.jsx */}
+              <Route
+                path="/admin"
+                element={
+                  <RoleProtectedRoute allowedRoles={["admin", "lecturer"]}>
+                    <Admin />
+                  </RoleProtectedRoute>
+                }
+              />
+
+              {/* Mindula — AdminDashboard.jsx */}
+              <Route
+                path="/admin-dashboard"
+                element={
+                  <RoleProtectedRoute allowedRoles={["admin", "lecturer"]}>
+                    <AdminDashboard />
+                  </RoleProtectedRoute>
+                }
+              />
+
+              {/* Pamuditha — Admindashboard.jsx */}
+              <Route
+                path="/admindashboard"
+                element={
+                  <RoleProtectedRoute allowedRoles={["admin", "lecturer"]}>
+                    <Admindashboard />
+                  </RoleProtectedRoute>
+                }
+              />
+
+              {/* Home Page */}
+              <Route path="/" element={<HomePage />} />
+
+              {/* Fallback for unknown routes */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </Layout>
+      </Router>
+    </AuthProvider>
   );
 }
 
-// Academic Resources Page with its own navigation
-function AcademicResourcesPage() {
-  return (
-    <div>
-      {/* Navigation for Academic Resources */}
-      <nav style={{ backgroundColor: '#ffffff', boxShadow: '0 2px 24px rgba(15, 27, 107, 0.12)', borderBottom: '1px solid rgba(37, 99, 235, 0.12)', position: 'sticky', top: 0, zIndex: 40 }}>
-        <div style={{ maxWidth: '1152px', margin: '0 auto', padding: '0 16px', paddingTop: '16px', paddingBottom: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-            <Link to="/" style={{ fontSize: '20px', fontWeight: '800', color: '#111827', textDecoration: 'none', fontFamily: 'Sora, sans-serif' }}>StudyNexus</Link>
-            <Link to="/resources" style={{ fontSize: '16px', color: '#2563eb', textDecoration: 'none', transition: 'color 0.2s', fontFamily: 'Sora, sans-serif', fontWeight: '600' }}
-              onMouseEnter={(e) => e.target.style.color = '#1a2fa8'}
-              onMouseLeave={(e) => e.target.style.color = '#2563eb'}
-            >Academic Resources</Link>
-          </div>
-        </div>
-      </nav>
-      {/* Academic Resources Content */}
-      <AcademicResources />
-    </div>
-  );
-}
-
-// Admin Dashboard Page with its own navigation
-function AdminDashboardPage() {
-  return (
-    <div>
-      {/* Navigation for Admin Dashboard */}
-      <nav style={{ backgroundColor: '#0f1b6b', boxShadow: '0 2px 24px rgba(15, 27, 107, 0.25)', borderBottom: '1px solid rgba(37, 99, 235, 0.12)', position: 'sticky', top: 0, zIndex: 40 }}>
-        <div style={{ maxWidth: '1152px', margin: '0 auto', padding: '0 16px', paddingTop: '16px', paddingBottom: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-              <Link to="/" style={{ fontSize: '20px', fontWeight: '800', color: '#ffffff', textDecoration: 'none', fontFamily: 'Sora, sans-serif' }}>StudyNexus</Link>
-              <Link to="/admin" style={{ fontSize: '16px', color: '#22d3ee', textDecoration: 'none', transition: 'color 0.2s', fontFamily: 'Sora, sans-serif', fontWeight: '600' }}
-                onMouseEnter={(e) => e.target.style.color = '#67e8f9'}
-                onMouseLeave={(e) => e.target.style.color = '#22d3ee'}
-              >Admin Dashboard</Link>
-            </div>
-            <div>
-              <Link to="/resources" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', transition: 'color 0.2s', fontFamily: 'Sora, sans-serif', fontWeight: '500' }}
-                onMouseEnter={(e) => e.target.style.color = '#ffffff'}
-                onMouseLeave={(e) => e.target.style.color = 'rgba(255,255,255,0.7)'}
-              >Academic Resources</Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-      {/* Admin Dashboard Content */}
-      <AdminDashboard />
-    </div>
-  );
-}
+export default App;

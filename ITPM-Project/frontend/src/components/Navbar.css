@@ -1,0 +1,117 @@
+/* =====================================================
+   NAVBAR COMPONENT
+   ===================================================== */
+
+.navbar {
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+
+.navbar-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--indigo-400);
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.navbar-brand:hover {
+  color: #a5b4fc;
+}
+
+.navbar-brand-text {
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: var(--text-white);
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #cbd5e1;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.navbar-link:hover {
+  color: var(--text-white);
+  background-color: rgba(255,255,255,0.05);
+}
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #cbd5e1;
+  padding: 8px 12px;
+}
+
+.navbar-user-icon {
+  color: var(--sky-400);
+}
+
+.navbar-username {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.navbar-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #1e293b;
+  color: var(--red-400);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--slate-700);
+  transition: var(--transition);
+}
+
+.navbar-logout-btn:hover {
+  background-color: #253347;
+  color: #fca5a5;
+}
+
+.navbar-register-btn {
+  background-color: var(--indigo-600);
+  color: var(--text-white);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  transition: var(--transition);
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+}
+
+.navbar-register-btn:hover {
+  background-color: var(--indigo-700);
+}

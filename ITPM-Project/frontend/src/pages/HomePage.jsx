@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 
 /* --- Data --- */
 const FEATURES = [
@@ -35,7 +36,7 @@ const FEATURES = [
 ];
 
 const AI_STEPS = [
-  { num: '01', title: 'Upload Your Lecture Material', desc: 'Supports PDF, PPTX, DOCX — drag and drop or click to upload from any device.' },
+  { num: '01', title: 'Upload Your Lecture Material', desc: 'Supports PDF, PPTX, DOCX ï¿½ drag and drop or click to upload from any device.' },
   { num: '02', title: 'AI Processes & Extracts Key Concepts', desc: 'Our model analyzes structure, headings, and content to identify what matters most.' },
   { num: '03', title: 'Review, Save & Download', desc: 'Get a summary card with bullet-point notes you can save, search, or export instantly.' },
 ];
@@ -84,10 +85,10 @@ const ROLES = [
 ];
 
 const GROUPS = [
-  { icon: '??', bg: 'g-blue', name: 'Advanced Algorithms Study Group', meta: '14 members · CS Module 3', badge: 'Active', badgeClass: 'badge-active' },
-  { icon: '??', bg: 'g-green', name: 'Bioinformatics Research Circle', meta: '8 members · BIO Module 5', badge: 'New', badgeClass: 'badge-new' },
-  { icon: '??', bg: 'g-amber', name: 'Data Structures & Databases', meta: '20 members · IT Module 2', badge: 'Full', badgeClass: 'badge-full' },
-  { icon: '??', bg: 'g-pink', name: 'UI/UX Design Collective', meta: '11 members · DES Module 1', badge: 'Active', badgeClass: 'badge-active' },
+  { icon: '??', bg: 'g-blue', name: 'Advanced Algorithms Study Group', meta: '14 members ï¿½ CS Module 3', badge: 'Active', badgeClass: 'badge-active' },
+  { icon: '??', bg: 'g-green', name: 'Bioinformatics Research Circle', meta: '8 members ï¿½ BIO Module 5', badge: 'New', badgeClass: 'badge-new' },
+  { icon: '??', bg: 'g-amber', name: 'Data Structures & Databases', meta: '20 members ï¿½ IT Module 2', badge: 'Full', badgeClass: 'badge-full' },
+  { icon: '??', bg: 'g-pink', name: 'UI/UX Design Collective', meta: '11 members ï¿½ DES Module 1', badge: 'Active', badgeClass: 'badge-active' },
 ];
 
 const COLLAB_FEATURES = [
@@ -118,12 +119,12 @@ const TESTIMONIALS = [
   },
   {
     initials: 'NP', stars: '?????',
-    quote: 'As a lecturer, tracking student progress has never been this effortless. I can see who\'s engaged and who needs extra support — all in real time.',
+    quote: 'As a lecturer, tracking student progress has never been this effortless. I can see who\'s engaged and who needs extra support ï¿½ all in real time.',
     name: 'Dr. Nirosha Perera', role: 'Senior Lecturer, Faculty of IT',
   },
   {
     initials: 'SM', stars: '?????',
-    quote: 'Our study group uses EduNexus to share notes and coordinate before every exam. The group resource hub keeps everything organized — no more messy WhatsApp files!',
+    quote: 'Our study group uses EduNexus to share notes and coordinate before every exam. The group resource hub keeps everything organized ï¿½ no more messy WhatsApp files!',
     name: 'Sanduni Madushan', role: 'Business IT Student, Year 2',
   },
 ];
@@ -132,7 +133,7 @@ const AI_BULLETS = [
   'Normalization reduces data redundancy by organizing tables into defined normal forms (1NF ? 3NF).',
   'A primary key uniquely identifies each row; foreign keys enforce referential integrity between relations.',
   'ACID properties (Atomicity, Consistency, Isolation, Durability) guarantee transaction reliability.',
-  'Indexing improves query speed but increases write overhead — balance is critical for optimization.',
+  'Indexing improves query speed but increases write overhead ï¿½ balance is critical for optimization.',
 ];
 
 export default function HomePage() {
@@ -181,8 +182,8 @@ export default function HomePage() {
         </ul>
 
         <div className="nav-actions">
-          <a href="/signin" className="btn-ghost">Sign In</a>
-          <a href="/signup" className="btn-primary">Sign Up ?</a>
+          <Link to="/login" className="btn-ghost">Sign In</Link>
+          <Link to="/register" className="btn-primary">Sign Up ?</Link>
         </div>
       </nav>
 
@@ -204,10 +205,10 @@ export default function HomePage() {
             <p className="hero-sub">
               The intelligent academic platform that helps university students upload
               lecture materials, generate AI summaries, form study groups, and track
-              progress — all in one place.
+              progress ï¿½ all in one place.
             </p>
             <div className="hero-actions">
-              <a href="/signup" className="btn-hero-primary">Start Learning Now</a>
+              <Link to="/register" className="btn-hero-primary">Start Learning Now</Link>
               <a href="#how-it-works" className="btn-hero-ghost">? See How It Works</a>
             </div>
             <div className="hero-stats">
@@ -249,7 +250,7 @@ export default function HomePage() {
                 <div className="ai-pill-icon">??</div>
                 <div className="ai-pill-text">
                   <strong>AI Summary Ready</strong>
-                  "Database Normalization" — 4 key points extracted
+                  "Database Normalization" ï¿½ 4 key points extracted
                 </div>
               </div>
             </div>
@@ -289,7 +290,7 @@ export default function HomePage() {
             <h2 className="section-title">From lecture file to smart notes in seconds</h2>
             <p className="section-sub">
               Our AI engine reads your uploaded materials and distills them into clean,
-              actionable study content so you can focus on understanding — not note-taking.
+              actionable study content so you can focus on understanding ï¿½ not note-taking.
             </p>
             <div className="ai-steps">
               {AI_STEPS.map((s) => (
@@ -318,7 +319,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="ai-output">
-              <div className="ai-output-label">? AI-Generated Summary — Database Systems</div>
+              <div className="ai-output-label">? AI-Generated Summary ï¿½ Database Systems</div>
               {AI_BULLETS.map((b, i) => (
                 <div className="ai-bullet" key={i}>
                   <span className="ai-bullet-arrow">?</span>
@@ -336,7 +337,7 @@ export default function HomePage() {
             <div className="section-label">How It Works</div>
             <h2 className="section-title">Get started in four simple steps</h2>
             <p className="section-sub">
-              From signup to full academic collaboration — EduNexus gets you productive
+              From signup to full academic collaboration ï¿½ EduNexus gets you productive
               in minutes.
             </p>
           </div>
@@ -361,7 +362,7 @@ export default function HomePage() {
             <div className="section-label">Built for Everyone</div>
             <h2 className="section-title">A platform that adapts to your role</h2>
             <p className="section-sub">
-              Whether you\'re learning, teaching, or managing — EduNexus is tailored
+              Whether you\'re learning, teaching, or managing ï¿½ EduNexus is tailored
               to your exact needs.
             </p>
           </div>
@@ -429,7 +430,7 @@ export default function HomePage() {
             <div className="section-label">Academic Resources</div>
             <h2 className="section-title">Share knowledge. Grow together.</h2>
             <p className="section-sub">
-              A centralized hub for all your academic materials — organized, searchable,
+              A centralized hub for all your academic materials ï¿½ organized, searchable,
               and always at your fingertips.
             </p>
           </div>
@@ -491,7 +492,7 @@ export default function HomePage() {
             faster, collaborate smarter, and achieve more.
           </p>
           <div className="cta-buttons">
-            <a href="/signup" className="btn-hero-primary">Create Free Account</a>
+            <Link to="/register" className="btn-hero-primary">Create Free Account</Link>
             <a href="#features" className="btn-hero-ghost">Explore Features</a>
           </div>
         </div>
@@ -526,7 +527,7 @@ export default function HomePage() {
               <li><a href="#roles">For Students</a></li>
               <li><a href="#roles">For Lecturers</a></li>
               <li><a href="#roles">For Admins</a></li>
-              <li><a href="/signup">Sign Up</a></li>
+              <li><Link to="/register">Sign Up</Link></li>
             </ul>
           </div>
 
@@ -542,7 +543,7 @@ export default function HomePage() {
         </div>
 
         <div className="footer-bottom">
-          <span>© 2026 EduNexus. All rights reserved. Built with MERN Stack.</span>
+          <span>ï¿½ 2026 EduNexus. All rights reserved. Built with MERN Stack.</span>
           <div className="footer-socials">
             {["??", "in", "gh", "@"].map((icon) => (
               <a href="#" className="social-btn" key={icon}>{icon}</a>

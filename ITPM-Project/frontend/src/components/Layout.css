@@ -1,0 +1,34 @@
+/* =====================================================
+   LAYOUT COMPONENT
+   ===================================================== */
+
+.layout-root {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.layout-root--authenticated {
+  display: flex;
+}
+
+.layout-content {
+  flex: 1;
+  margin-left: 256px; /* same as sidebar width */
+  min-width: 0;
+}
+
+.layout-main {
+  padding: 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .layout-content {
+    margin-left: 0;
+  }
+  .layout-main {
+    padding: 16px;
+  }
+}
