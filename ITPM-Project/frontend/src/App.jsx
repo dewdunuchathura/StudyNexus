@@ -48,19 +48,22 @@ function App() {
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
               {/* Public Routes */}
+              <Route path="/"         element={<HomePage />} />
               <Route path="/login"    element={<Login />} />
               <Route path="/register" element={<Register />} />
 
-              {/* Authenticated — any logged-in user */}
+              {/* Authenticated — Home2 is the central hub after login */}
               <Route
-                path="/home"
+                path="/home2"
                 element={
                   <ProtectedRoute>
                     <Home2 />
                   </ProtectedRoute>
                 }
               />
+              <Route path="/home" element={<Navigate to="/home2" replace />} />
 
+              {/* Goal Tracking */}
               <Route
                 path="/dashboard"
                 element={
@@ -89,13 +92,15 @@ function App() {
                 }
               />
               <Route
-                path="/groups"
+                path="/all-groups"
                 element={
                   <ProtectedRoute>
                     <AllGroups />
                   </ProtectedRoute>
                 }
               />
+              <Route path="/groups" element={<Navigate to="/all-groups" replace />} />
+              
               <Route
                 path="/group/:id"
                 element={
@@ -113,10 +118,18 @@ function App() {
                 }
               />
 
-              {/* Mindula — Academic Resources (public) */}
-              <Route path="/resources" element={<AcademicResources />} />
+              {/* Mindula — Academic Resources (accessible to all logged users) */}
+              <Route
+                path="/academic-resources"
+                element={
+                  <ProtectedRoute>
+                    <AcademicResources />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/resources" element={<Navigate to="/academic-resources" replace />} />
 
-              {/* Krishan — User Management */}
+              {/* Admin / Lecturer only routes */}
               <Route
                 path="/users"
                 element={
@@ -126,7 +139,6 @@ function App() {
                 }
               />
 
-              {/* Admin / Reports */}
               <Route
                 path="/admin/reports"
                 element={
@@ -146,15 +158,6 @@ function App() {
               />
 
               <Route
-                path="/admin-dashboard"
-                element={
-                  <RoleProtectedRoute allowedRoles={["admin", "lecturer"]}>
-                    <AdminDashboard />
-                  </RoleProtectedRoute>
-                }
-              />
-
-              <Route
                 path="/admindashboard"
                 element={
                   <RoleProtectedRoute allowedRoles={["admin", "lecturer"]}>
@@ -162,16 +165,41 @@ function App() {
                   </RoleProtectedRoute>
                 }
               />
+              <Route path="/admin-dashboard" element={<Navigate to="/admindashboard" replace />} />
 
-              {/* Dewdunu — Feature Pages */}
-              <Route path="/home2" element={<Home2 />} />
-              <Route path="/ai-summary" element={<AISummary />} />
-              <Route path="/summary" element={<SummaryPage />} />
-              <Route path="/revision-notes" element={<RevisionNotesPage />} />
-              <Route path="/questions" element={<QuestionsPage />} />
-
-              {/* Home Page */}
-              <Route path="/" element={<HomePage />} />
+              {/* Dewdunu — AI Feature Pages */}
+              <Route
+                path="/ai-summary"
+                element={
+                  <ProtectedRoute>
+                    <AISummary />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/summary"
+                element={
+                  <ProtectedRoute>
+                    <SummaryPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/revision-notes"
+                element={
+                  <ProtectedRoute>
+                    <RevisionNotesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/questions"
+                element={
+                  <ProtectedRoute>
+                    <QuestionsPage />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Fallback for unknown routes */}
               <Route path="*" element={<Navigate to="/" replace />} />

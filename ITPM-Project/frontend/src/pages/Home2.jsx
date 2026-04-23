@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const HOME2_CARDS = [
   {
@@ -7,6 +8,7 @@ const HOME2_CARDS = [
     accent: "#2563eb",
     bg: "#dbeafe",
     icon: "01",
+    link: "/dashboard"
   },
   {
     title: "Smart Learning AI",
@@ -14,6 +16,7 @@ const HOME2_CARDS = [
     accent: "#0ea5e9",
     bg: "#e0f2fe",
     icon: "AI",
+    link: "/ai-summary"
   },
   {
     title: "Group Collaboration",
@@ -21,6 +24,7 @@ const HOME2_CARDS = [
     accent: "#16a34a",
     bg: "#dcfce7",
     icon: "03",
+    link: "/all-groups"
   },
   {
     title: "Resource Sharing Platform",
@@ -28,6 +32,7 @@ const HOME2_CARDS = [
     accent: "#be185d",
     bg: "#fce7f3",
     icon: "04",
+    link: "/academic-resources"
   },
 ];
 
@@ -40,8 +45,21 @@ const STYLES = `
     margin: 0 auto;
   }
 
+  .home2-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+    transition: transform 0.2s;
+  }
+
+  .home2-card-link:hover {
+    transform: translateY(-5px);
+  }
+
   .home2-card {
     height: 100%;
+    cursor: pointer;
   }
 
   .home2-card p {
@@ -114,7 +132,7 @@ function Home2() {
                 </div>
               </div>
               <div className="ai-pill">
-                <div className="ai-pill-icon">?</div>
+                <div className="ai-pill-icon">🚀</div>
                 <div className="ai-pill-text">
                   <strong>Ready to continue</strong>
                   Choose the path that fits your study flow best.
@@ -137,13 +155,15 @@ function Home2() {
 
           <div className="home2-grid">
             {HOME2_CARDS.map((card) => (
-              <article className="feature-card home2-card" key={card.title}>
-                <div className="feature-icon-wrap" style={{ background: card.bg }}>
-                  <span style={{ color: card.accent, fontWeight: 700 }}>{card.icon}</span>
-                </div>
-                <h3>{card.title}</h3>
-                <p>{card.desc}</p>
-              </article>
+              <Link to={card.link} className="home2-card-link" key={card.title}>
+                <article className="feature-card home2-card">
+                  <div className="feature-icon-wrap" style={{ background: card.bg }}>
+                    <span style={{ color: card.accent, fontWeight: 700 }}>{card.icon}</span>
+                  </div>
+                  <h3>{card.title}</h3>
+                  <p>{card.desc}</p>
+                </article>
+              </Link>
             ))}
           </div>
         </div>

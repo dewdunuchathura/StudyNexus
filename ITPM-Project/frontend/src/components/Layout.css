@@ -4,31 +4,27 @@
 
 .layout-root {
   min-height: 100vh;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: #f8fafc; /* Modern slate background */
+  color: #1e293b;
 }
 
 .layout-root--authenticated {
-  display: flex;
+  display: block; /* Removed flex since we use header now */
 }
 
 .layout-content {
-  flex: 1;
-  margin-left: 256px; /* same as sidebar width */
+  width: 100%;
   min-width: 0;
 }
 
 .layout-main {
-  padding: 32px;
-  max-width: 1280px;
+  padding: 0; /* Let pages handle their own padding for full-bleed effects */
+  max-width: 100%;
   margin: 0 auto;
 }
 
 @media (max-width: 768px) {
-  .layout-content {
-    margin-left: 0;
-  }
   .layout-main {
-    padding: 16px;
+    padding: 0;
   }
 }

@@ -7,14 +7,13 @@ import "./Auth.css";
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 // ── Admin email → dashboard route mapping ─────────────────────────────────
-// Add each admin's email and their dashboard route here.
 const getAdminRoute = (email) => {
     const routes = {
         "dilsharakrishan@gmail.com": "/users",          // Krishan  — User Management
         "nethmimindula@gmail.com":   "/admin",           // Mindula  — admin.jsx
-        "pamudithajayasena@gmail.com": "/admindashboard",  // Pamuditha — Admindashboard.jsx
+        "pamudithajayasena@gmail.com": "/admindashboard",  // Pamuditha — AdminDashboard.jsx
     };
-    return routes[email?.toLowerCase()] || "/home"; // unmapped admins go to /home
+    return routes[email?.toLowerCase()] || "/home2"; // unmapped admins go to /home2
 };
 
 const Login = () => {
@@ -24,7 +23,7 @@ const Login = () => {
     useEffect(() => {
         if (user) {
             const isAdmin = user.role === "admin" || user.role === "lecturer";
-            const dest = isAdmin ? getAdminRoute(user.email) : "/home";
+            const dest = isAdmin ? getAdminRoute(user.email) : "/home2";
             navigate(dest);
         }
     }, [user, navigate]);
@@ -53,7 +52,7 @@ const Login = () => {
         try {
             const { user: loggedInUser } = await login(email, password);
             const isAdmin = loggedInUser?.role === "admin" || loggedInUser?.role === "lecturer";
-            const dest = isAdmin ? getAdminRoute(loggedInUser?.email) : "/home";
+            const dest = isAdmin ? getAdminRoute(loggedInUser?.email) : "/home2";
             navigate(dest);
         } catch (err) {
             const msg = err.response?.data?.message
