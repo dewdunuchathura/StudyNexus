@@ -616,6 +616,10 @@ function GroupCard({ group, onOpen, joined }) {
           <div className="flex items-center gap-2">
             <span className="text-sm text-slate-400">{group.time}</span>
             <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onOpen(group)
+              }}
               className="text-sm font-bold px-4 py-2 rounded-lg transition-all bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 hover:from-blue-600 hover:to-indigo-600 hover:text-white hover:shadow-lg hover:scale-105 duration-300"
             >
               {joined ? 'Open' : 'Join Group'}

@@ -93,9 +93,6 @@ export default function CreateGroup() {
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-4xl font-bold text-blue-600">Create Group</h2>
           <div className="flex gap-3">
-            <Link to="/admin" className="text-lg text-red-600 hover:text-red-800 transition-colors font-semibold">
-              Admin Panel
-            </Link>
             <Link to="/groups" className="text-lg text-blue-600 hover:text-blue-800 transition-colors">View All Groups</Link>
           </div>
         </div>

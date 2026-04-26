@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import '../styles/AdminReports.css'
 
 // ─── Admin Reports Page ──────────────────────────────────────────────────────
 export default function AdminReports() {
@@ -232,86 +233,84 @@ export default function AdminReports() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFFFF', fontFamily: 'Inter, sans-serif' }}>
+    <div className="admin-reports-container">
       {/* Main Content */}
       <div className="flex-1 p-12">
         {/* Stats Cards */}
-        <div className="grid grid-cols-5 gap-8 mb-12">
-          <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-lg" style={{ boxShadow: '0 4px 6px -1px rgba(0, 48, 151, 0.1), 0 2px 4px -2px rgba(0, 48, 151, 0.06)' }}>
-            <div className="flex items-center justify-between">
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-header">
               <div>
-                <p className="text-base" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontSize: '18px' }}>Total Reports</p>
-                <p className="text-4xl font-bold" style={{ color: '#1F2937', fontWeight: 600, fontFamily: 'Inter, sans-serif' }}>{stats.total}</p>
+                <p className="stat-label">Total Reports</p>
+                <p className="stat-value">{stats.total}</p>
               </div>
-              <div className="w-16 h-16 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 48, 151, 0.1)' }}>
-                <span className="text-3xl">📊</span>
+              <div className="stat-icon" style={{ backgroundColor: 'rgba(0, 48, 151, 0.1)' }}>
+                <span>📊</span>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-lg" style={{ boxShadow: '0 4px 6px -1px rgba(0, 48, 151, 0.1), 0 2px 4px -2px rgba(0, 48, 151, 0.06)' }}>
-            <div className="flex items-center justify-between">
+          <div className="stat-card">
+            <div className="stat-header">
               <div>
-                <p className="text-base" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontSize: '18px' }}>Pending</p>
-                <p className="text-4xl font-bold" style={{ color: '#003097', fontWeight: 600, fontFamily: 'Inter, sans-serif' }}>{stats.pending}</p>
+                <p className="stat-label">Pending</p>
+                <p className="stat-value">{stats.pending}</p>
               </div>
-              <div className="w-16 h-16 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(251, 191, 36, 0.1)' }}>
-                <span className="text-3xl">⏳</span>
+              <div className="stat-icon" style={{ backgroundColor: 'rgba(251, 191, 36, 0.1)' }}>
+                <span>⏳</span>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-lg" style={{ boxShadow: '0 4px 6px -1px rgba(0, 48, 151, 0.1), 0 2px 4px -2px rgba(0, 48, 151, 0.06)' }}>
-            <div className="flex items-center justify-between">
+          <div className="stat-card">
+            <div className="stat-header">
               <div>
-                <p className="text-base" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontSize: '18px' }}>Under Review</p>
-                <p className="text-4xl font-bold" style={{ color: '#003097', fontWeight: 600, fontFamily: 'Inter, sans-serif' }}>{stats.underReview}</p>
+                <p className="stat-label">Under Review</p>
+                <p className="stat-value">{stats.underReview}</p>
               </div>
-              <div className="w-16 h-16 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(79, 195, 247, 0.1)' }}>
-                <span className="text-3xl">👁️</span>
+              <div className="stat-icon" style={{ backgroundColor: 'rgba(79, 195, 247, 0.1)' }}>
+                <span>👁️</span>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-lg" style={{ boxShadow: '0 4px 6px -1px rgba(0, 48, 151, 0.1), 0 2px 4px -2px rgba(0, 48, 151, 0.06)' }}>
-            <div className="flex items-center justify-between">
+          <div className="stat-card">
+            <div className="stat-header">
               <div>
-                <p className="text-base" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontSize: '18px' }}>Resolved</p>
-                <p className="text-4xl font-bold" style={{ color: '#003097', fontWeight: 600, fontFamily: 'Inter, sans-serif' }}>{stats.resolved}</p>
+                <p className="stat-label">Resolved</p>
+                <p className="stat-value">{stats.resolved}</p>
               </div>
-              <div className="w-16 h-16 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                <span className="text-3xl">✅</span>
+              <div className="stat-icon" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
+                <span>✅</span>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-lg" style={{ boxShadow: '0 4px 6px -1px rgba(0, 48, 151, 0.1), 0 2px 4px -2px rgba(0, 48, 151, 0.06)' }}>
-            <div className="flex items-center justify-between">
+          <div className="stat-card">
+            <div className="stat-header">
               <div>
-                <p className="text-base" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontSize: '18px' }}>High Priority</p>
-                <p className="text-4xl font-bold" style={{ color: '#003097', fontWeight: 600, fontFamily: 'Inter, sans-serif' }}>{stats.high}</p>
+                <p className="stat-label">High Priority</p>
+                <p className="stat-value">{stats.high}</p>
               </div>
-              <div className="w-16 h-16 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
-                <span className="text-3xl">🚨</span>
+              <div className="stat-icon" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
+                <span>🚨</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-2xl p-8 border border-gray-200 mb-12" style={{ boxShadow: '0 4px 6px -1px rgba(0, 48, 151, 0.1), 0 2px 4px -2px rgba(0, 48, 151, 0.06)' }}>
-          <div className="flex gap-6">
+        <div className="search-filter-container">
+          <div className="search-filter-row">
             <div className="flex-1">
               <input
                 type="text"
                 placeholder="Search by group name, reporter, or reason..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full px-6 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
-                style={{ fontSize: '18px', fontFamily: 'Inter, sans-serif' }}
+                className="search-input"
               />
             </div>
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="px-6 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
-              style={{ fontSize: '18px', fontFamily: 'Inter, sans-serif' }}
+              className="filter-select"
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
@@ -323,81 +322,72 @@ export default function AdminReports() {
         </div>
 
         {/* Reports Table */}
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg" style={{ boxShadow: '0 4px 6px -1px rgba(0, 48, 151, 0.1), 0 2px 4px -2px rgba(0, 48, 151, 0.06)' }}>
+        <div className="reports-table-container">
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+            <table className="reports-table">
+              <thead>
                 <tr>
-                  <th className="px-8 py-4 text-left text-base font-medium" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '16px' }}>Report ID</th>
-                  <th className="px-8 py-4 text-left text-base font-medium" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '16px' }}>Group Info</th>
-                  <th className="px-8 py-4 text-left text-base font-medium" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '16px' }}>Reporter</th>
-                  <th className="px-8 py-4 text-left text-base font-medium" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '16px' }}>Priority</th>
-                  <th className="px-8 py-4 text-left text-base font-medium" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '16px' }}>Status</th>
-                  <th className="px-8 py-4 text-left text-base font-medium" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '16px' }}>Date</th>
-                  <th className="px-8 py-4 text-left text-base font-medium" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '16px' }}>Actions</th>
+                  <th>Report ID</th>
+                  <th>Group Info</th>
+                  <th>Reporter</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="8" className="px-8 py-16 text-center">
-                      <div className="text-4xl mb-4 animate-bounce">🔄</div>
-                      <div style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontSize: '18px' }}>Loading reports...</div>
+                    <td colSpan="7" className="loading-state">
+                      <div className="loading-icon">🔄</div>
+                      <div className="loading-text">Loading reports...</div>
                     </td>
                   </tr>
                 ) : filteredReports.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="px-8 py-16 text-center">
-                      <div className="text-4xl mb-4">🔍</div>
-                      <div style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontSize: '18px' }}>No reports found</div>
+                    <td colSpan="7" className="empty-state">
+                      <div className="empty-icon">🔍</div>
+                      <div className="empty-text">No reports found</div>
                     </td>
                   </tr>
                 ) : (
                   filteredReports.map(report => (
-                    <tr key={report.id} className="hover:bg-blue-50 transition-colors duration-200">
-                      <td className="px-8 py-6">
-                        <div className="font-mono text-base" style={{ color: '#1F2937', fontFamily: 'Inter, sans-serif', fontSize: '16px' }}>{report.id}</div>
+                    <tr key={report.id}>
+                      <td>
+                        <div className="report-id">{report.id}</div>
                       </td>
-                      <td className="px-8 py-6">
-                        <div>
-                          <div className="font-medium text-base" style={{ color: '#1F2937', fontFamily: 'Inter, sans-serif', fontSize: '16px' }}>{report.groupName}</div>
-                          <div className="text-sm" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontSize: '14px' }}>{report.groupId}</div>
+                      <td>
+                        <div className="group-info">
+                          <div className="group-name">{report.groupName}</div>
+                          <div className="group-id">{report.groupId}</div>
                         </div>
                       </td>
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-3">
-                          <span className="text-base" style={{ color: '#1F2937', fontFamily: 'Inter, sans-serif', fontSize: '16px' }}>{report.reportedBy}</span>
-                          <div className="text-sm" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontSize: '14px' }}>{report.reporterId}</div>
+                      <td>
+                        <div className="reporter-info">
+                          <span className="reporter-name">{report.reportedBy}</span>
+                          <div className="reporter-id">{report.reporterId}</div>
                         </div>
                       </td>
-                      <td className="px-8 py-6">
-                        <span className={`px-4 py-2 text-base font-medium rounded-full ${getPriorityColor(report.priority)}`} style={{ fontSize: '14px' }}>
+                      <td>
+                        <span className={`priority-badge ${report.priority}`}>
                           {report.priority}
                         </span>
                       </td>
-                      <td className="px-8 py-6">
-                        <span className={`px-4 py-2 text-base font-medium rounded-full border ${getStatusColor(report.status)}`} style={{ fontSize: '14px' }}>
+                      <td>
+                        <span className={`status-badge ${report.status}`}>
                           {report.status.replace('_', ' ')}
                         </span>
                       </td>
-                      <td className="px-8 py-6 text-base" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif', fontSize: '16px' }}>{new Date(report.reportedAt).toLocaleDateString()}</td>
-                      <td className="px-8 py-6">
-                        <div className="flex gap-3">
+                      <td>{new Date(report.reportedAt).toLocaleDateString()}</td>
+                      <td>
+                        <div className="action-buttons">
                           <button
                             onClick={() => {
                               setSelectedReport(report)
                               setShowDetails(true)
                             }}
-                            className="px-4 py-2 text-base font-medium rounded-lg transition-all duration-200 hover:shadow-md"
-                            style={{ 
-                              backgroundColor: '#4FC3F7', 
-                              color: '#FFFFFF', 
-                              fontFamily: 'Inter, sans-serif',
-                              fontWeight: 400,
-                              border: 'none',
-                              borderRadius: '8px',
-                              fontSize: '14px'
-                            }}
+                            className="btn btn-view-details"
                           >
                             View Details
                           </button>
@@ -412,16 +402,7 @@ export default function AdminReports() {
                                 })
                                 setShowDeleteModal(true)
                               }}
-                              className="px-4 py-2 text-base font-medium rounded-lg transition-all duration-200 hover:shadow-md"
-                              style={{ 
-                                backgroundColor: '#EF4444', 
-                                color: '#FFFFFF', 
-                                fontFamily: 'Inter, sans-serif',
-                                fontWeight: 400,
-                                border: 'none',
-                                borderRadius: '8px',
-                                fontSize: '14px'
-                              }}
+                              className="btn btn-temp-delete"
                             >
                               Temp Delete
                             </button>
@@ -434,16 +415,7 @@ export default function AdminReports() {
                               setReports(updatedReports)
                               localStorage.setItem('group_reports', JSON.stringify(updatedReports))
                             }}
-                            className="px-4 py-2 text-base font-medium rounded-lg transition-all duration-200 hover:shadow-md"
-                            style={{ 
-                              backgroundColor: report.status === 'pending' ? '#F59E0B' : '#10B981', 
-                              color: '#FFFFFF', 
-                              fontFamily: 'Inter, sans-serif',
-                              fontWeight: 400,
-                              border: 'none',
-                              borderRadius: '8px',
-                              fontSize: '14px'
-                            }}
+                            className={`btn ${report.status === 'pending' ? 'btn-review' : 'btn-resolve'}`}
                           >
                             {report.status === 'pending' ? 'Review' : 'Resolve'}
                           </button>
@@ -460,13 +432,13 @@ export default function AdminReports() {
 
       {/* Report Details Modal */}
       {showDetails && selectedReport && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold" style={{ color: '#1F2937', fontFamily: 'Inter, sans-serif' }}>Report Details - {selectedReport.id}</h3>
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h3 className="modal-title">Report Details - {selectedReport.id}</h3>
               <button
                 onClick={() => setShowDetails(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="modal-close"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -474,66 +446,66 @@ export default function AdminReports() {
               </button>
             </div>
             
-            <div className="space-y-6">
+            <div className="modal-content">
               {/* Group Information */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif' }}>Group Name</label>
-                  <div className="text-sm" style={{ color: '#1F2937', fontFamily: 'Inter, sans-serif' }}>{selectedReport.groupName}</div>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label className="form-label">Group Name</label>
+                  <div className="form-value">{selectedReport.groupName}</div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif' }}>Group ID</label>
-                  <div className="text-sm font-mono" style={{ color: '#1F2937', fontFamily: 'Inter, sans-serif' }}>{selectedReport.groupId}</div>
+                <div className="form-group">
+                  <label className="form-label">Group ID</label>
+                  <div className="form-value">{selectedReport.groupId}</div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif' }}>Category</label>
-                  <div className="text-sm" style={{ color: '#1F2937', fontFamily: 'Inter, sans-serif' }}>{selectedReport.category}</div>
+                <div className="form-group">
+                  <label className="form-label">Category</label>
+                  <div className="form-value">{selectedReport.category}</div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif' }}>Reported At</label>
-                  <div className="text-sm" style={{ color: '#1F2937', fontFamily: 'Inter, sans-serif' }}>{new Date(selectedReport.reportedAt).toLocaleString()}</div>
+                <div className="form-group">
+                  <label className="form-label">Reported At</label>
+                  <div className="form-value">{new Date(selectedReport.reportedAt).toLocaleString()}</div>
                 </div>
               </div>
 
               {/* Reporter Information */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif' }}>Reported By</label>
-                  <div className="text-sm" style={{ color: '#1F2937', fontFamily: 'Inter, sans-serif' }}>{selectedReport.reportedBy}</div>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label className="form-label">Reported By</label>
+                  <div className="form-value">{selectedReport.reportedBy}</div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif' }}>Reporter ID</label>
-                  <div className="text-sm font-mono" style={{ color: '#1F2937', fontFamily: 'Inter, sans-serif' }}>{selectedReport.reporterId}</div>
+                <div className="form-group">
+                  <label className="form-label">Reporter ID</label>
+                  <div className="form-value">{selectedReport.reporterId}</div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif' }}>Priority</label>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(selectedReport.priority)}`}>
+                <div className="form-group">
+                  <label className="form-label">Priority</label>
+                  <span className={`priority-badge ${selectedReport.priority}`}>
                     {selectedReport.priority}
                   </span>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif' }}>Status</label>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(selectedReport.status)}`}>
+                <div className="form-group">
+                  <label className="form-label">Status</label>
+                  <span className={`status-badge ${selectedReport.status}`}>
                     {selectedReport.status.replace('_', ' ')}
                   </span>
                 </div>
               </div>
 
               {/* Report Reason */}
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif' }}>Report Reason</label>
-                <div className="text-sm" style={{ color: '#1F2937', fontFamily: 'Inter, sans-serif' }}>{selectedReport.reason}</div>
+              <div className="form-group">
+                <label className="form-label">Report Reason</label>
+                <div className="form-value">{selectedReport.reason}</div>
               </div>
 
               {/* Description */}
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif' }}>Description</label>
-                <div className="text-sm" style={{ color: '#1F2937', fontFamily: 'Inter, sans-serif' }}>{selectedReport.description}</div>
+              <div className="form-group">
+                <label className="form-label">Description</label>
+                <div className="form-value">{selectedReport.description}</div>
               </div>
 
               {/* Action Taken */}
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: '#6B7280', fontFamily: 'Inter, sans-serif' }}>Action Taken</label>
+              <div className="form-group">
+                <label className="form-label">Action Taken</label>
                 <textarea
                   value={selectedReport.actionTaken || ''}
                   onChange={(e) => {
@@ -543,8 +515,7 @@ export default function AdminReports() {
                     setReports(updatedReports)
                     localStorage.setItem('group_reports', JSON.stringify(updatedReports))
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
-                  style={{ fontSize: '14px', fontFamily: 'Inter, sans-serif' }}
+                  className="form-textarea"
                   rows="3"
                   placeholder="Describe actions taken..."
                 />
@@ -552,18 +523,10 @@ export default function AdminReports() {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3">
+            <div className="modal-actions">
               <button
                 onClick={() => setShowDetails(false)}
-                className="flex-1 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 hover:shadow-md"
-                style={{ 
-                  backgroundColor: '#E5E7EB', 
-                  color: '#6B7280', 
-                  fontFamily: 'Inter, sans-serif',
-                  fontWeight: 400,
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '8px'
-                }}
+                className="btn btn-cancel"
               >
                 Close
               </button>
@@ -574,17 +537,17 @@ export default function AdminReports() {
 
       {/* Temporary Delete Modal */}
       {showDeleteModal && selectedGroup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Temporarily Delete Group</h3>
+        <div className="modal-overlay">
+          <div className="modal" style={{ maxWidth: '28rem' }}>
+            <div className="modal-header">
+              <h3 className="modal-title">Temporarily Delete Group</h3>
               <button
                 onClick={() => {
                   setShowDeleteModal(false)
                   setSelectedGroup(null)
                   setDeleteReason('')
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="modal-close"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -592,42 +555,42 @@ export default function AdminReports() {
               </button>
             </div>
             
-            <div className="mb-4">
+            <div className="modal-content">
               <p className="text-sm text-gray-600 mb-2">
                 Are you sure you want to temporarily delete <strong>{selectedGroup.groupName}</strong>?
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 mb-4">
                 This action can be reversed later. Group will be inaccessible but not permanently deleted.
               </p>
+              
+              <div className="form-group">
+                <label className="form-label">Reason for temporary deletion</label>
+                <textarea
+                  value={deleteReason}
+                  onChange={(e) => setDeleteReason(e.target.value)}
+                  className="form-textarea"
+                  rows="3"
+                  placeholder="Enter reason..."
+                  required
+                />
+              </div>
             </div>
             
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Reason for temporary deletion</label>
-              <textarea
-                value={deleteReason}
-                onChange={(e) => setDeleteReason(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                rows="3"
-                placeholder="Enter reason..."
-                required
-              />
-            </div>
-            
-            <div className="flex gap-3">
+            <div className="modal-actions">
               <button
                 onClick={() => {
                   setShowDeleteModal(false)
                   setSelectedGroup(null)
                   setDeleteReason('')
                 }}
-                className="flex-1 px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="btn btn-cancel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleTempDelete}
                 disabled={!deleteReason}
-                className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn btn-delete"
               >
                 Temporarily Delete
               </button>
