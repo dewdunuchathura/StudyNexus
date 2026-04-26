@@ -17,14 +17,29 @@
   min-width: 0;
 }
 
+.layout-content--with-sidebar {
+  min-height: 100vh;
+}
+
 .layout-main {
   padding: 0; /* Let pages handle their own padding for full-bleed effects */
   max-width: 100%;
   margin: 0 auto;
 }
 
+.layout-main--with-sidebar {
+  margin-left: 256px;
+  min-height: 100vh;
+  padding: 32px;
+}
+
 @media (max-width: 768px) {
   .layout-main {
     padding: 0;
+  }
+
+  .layout-main--with-sidebar {
+    margin-left: 0;
+    padding: 20px;
   }
 }

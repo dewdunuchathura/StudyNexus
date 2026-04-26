@@ -9,20 +9,29 @@ const Sidebar = () => {
 
     const role = user?.role;
     const isAdminOrLecturer = role === "admin" || role === "lecturer";
+    const userManagementPath = location.pathname === "/admin-goals" ? "/admin-goals" : "/users";
 
     // ── Nav links ─────────────────────────────────────────────────────
     // Build dynamically based on role so students never see restricted pages.
     const mainLinks = [
         // Only admin / lecturer can access User Management
         ...(isAdminOrLecturer
-            ? [{ name: "User Management", path: "/users", icon: Users }]
+            ? [{ name: "User Management", path: userManagementPath, icon: Users }]
             : []),
         { name: "Study Goals", path: "/dashboard", icon: Target },
         { name: "Leaderboard", path: "/leaderboard", icon: Trophy },
     ];
 
 
-    const isActive = (path) => location.pathname === path;
+    const isActive = (path) => {
+        if (path === "/users") {
+            return ["/users", "/admin-goals"].includes(location.pathname);
+        }
+        if (path === "/admin-goals") {
+            return location.pathname === "/admin-goals";
+        }
+        return location.pathname === path;
+    };
 
     return (
         <div className="sidebar">

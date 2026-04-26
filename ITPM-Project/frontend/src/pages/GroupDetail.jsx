@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { isGroupJoined, joinGroupForUser } from '../utils/groupMembership'
 import WhatsAppChat from '../components/chat/WhatsAppChat.jsx'
 
 // ─── Category styles ───────────────────────────────────────────────────────
@@ -46,9 +48,10 @@ function FileIcon({ color }) {
 
 // ─── Main Group Detail page ──────────────────────────────────────────────────────
 export default function GroupDetail() {
-  const { groupId } = useParams()
+  const { id: groupId } = useParams()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { user } = useAuth()
   const [group, setGroup] = useState(null)
   const [activeTab, setActiveTab] = useState('chat') // Default to chat
   const [messages, setMessages] = useState([])
@@ -121,6 +124,12 @@ export default function GroupDetail() {
   const offlineMembers = group.panelMembers?.filter(m => !m.online) || []
   const memberLimitPct = group.memberLimit ? Math.round((group.members / group.memberLimit) * 100) : 0
   const limitColor = memberLimitPct >= 100 ? 'bg-red-400' : memberLimitPct >= 75 ? 'bg-amber-400' : 'bg-blue-500'
+  const joined = isGroupJoined(user, groupId)
+
+  const handleJoinGroup = () => {
+    joinGroupForUser(user, groupId)
+    navigate(`/group-joined/${groupId}`)
+  }
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F0F9FF', fontFamily: 'Inter, sans-serif' }}>
@@ -165,6 +174,13 @@ export default function GroupDetail() {
       <div className="px-6 py-6 flex-shrink-0" style={{ background: 'linear-gradient(to right, #003097, #4FC3F7)' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
+            <button
+              onClick={joined ? () => navigate(`/group-joined/${groupId}`) : handleJoinGroup}
+              className="px-5 py-2.5 rounded-lg font-semibold transition-all shadow-lg hover:scale-105"
+              style={{ backgroundColor: '#FFFFFF', color: '#003097', fontFamily: 'Inter, sans-serif' }}
+            >
+              {joined ? 'Open Group Chat' : 'Join Group'}
+            </button>
             <Link
               to="/groups"
               className="w-10 h-10 rounded-lg flex items-center justify-center text-white transition-colors"

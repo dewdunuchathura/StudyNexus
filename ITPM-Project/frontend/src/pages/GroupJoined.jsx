@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { getJoinedGroupIds, leaveGroupForUser } from '../utils/groupMembership'
 import FileUpload from '../components/chat/FileUpload.jsx'
 import VoiceRecorder from '../components/chat/VoiceRecorder.jsx'
 
@@ -121,6 +123,7 @@ function GroupCard({ group, onOpen }) {
 export default function GroupJoined() {
   const navigate = useNavigate()
   const { id: groupId } = useParams()
+  const { user } = useAuth()
   const [groups, setGroups] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -236,16 +239,19 @@ export default function GroupJoined() {
     }
   }
 
+  const joinedGroupIds = useMemo(() => getJoinedGroupIds(user), [user])
+
   const filtered = useMemo(() => {
     return groups.filter(g =>
+      joinedGroupIds.includes(g.id) &&
       (g.name.toLowerCase().includes(search.toLowerCase()) || g.id.includes(search))
     )
-  }, [groups, search])
+  }, [groups, search, joinedGroupIds])
 
-  const onlineCount = groups.reduce((a, g) => a + g.online, 0)
-  const projectCount = groups.filter(g => g.category === 'project').length
-  const studyCount = groups.filter(g => g.category === 'study').length
-  const discussionCount = groups.filter(g => g.category === 'discussion').length
+  const onlineCount = filtered.reduce((a, g) => a + g.online, 0)
+  const projectCount = filtered.filter(g => g.category === 'project').length
+  const studyCount = filtered.filter(g => g.category === 'study').length
+  const discussionCount = filtered.filter(g => g.category === 'discussion').length
 
   // Action handlers
   const handleExportGroup = useCallback(() => {
@@ -358,6 +364,7 @@ export default function GroupJoined() {
     console.log('Group Exit:', exitData)
     
     // Remove group from user's groups list
+    leaveGroupForUser(user, selectedGroup.id)
     setGroups(groups.filter(g => g.id !== selectedGroup.id))
     setSelectedGroup(null)
     setExitReason('')
@@ -694,7 +701,7 @@ export default function GroupJoined() {
             ) : filtered.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-3xl mb-3">🔍</div>
-                <div className="text-base text-slate-400">No groups found</div>
+                <div className="text-base text-slate-400">You have not joined any groups yet</div>
               </div>
             ) : (
               filtered.map(group => (
@@ -1165,7 +1172,7 @@ export default function GroupJoined() {
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
                 <div className="text-8xl mb-6">💬</div>
-                <div className="text-3xl font-semibold text-slate-600 mb-4">Select a Group</div>
+                <div className="text-3xl font-semibold text-slate-600 mb-4">Select a Joined Group</div>
                 <div className="text-lg text-slate-400">Choose a group from the left to start chatting</div>
               </div>
             </div>

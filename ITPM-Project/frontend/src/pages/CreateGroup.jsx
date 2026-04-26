@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { joinGroupForUser } from '../utils/groupMembership'
 import '../styles/index.css'
 
 const PREFIXES = ['it', 'bm', 'hs', 'en']
@@ -7,6 +9,7 @@ const idRegex = new RegExp(`^(${PREFIXES.join('|')})\\d{8}$`, 'i')
 
 export default function CreateGroup() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [groupCode, setGroupCode] = useState('')
   const [category, setCategory] = useState('project')
   const [groupName, setGroupName] = useState('')

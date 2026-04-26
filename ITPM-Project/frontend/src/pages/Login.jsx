@@ -9,11 +9,11 @@ const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 // ── Admin email → dashboard route mapping ─────────────────────────────────
 const getAdminRoute = (email) => {
     const routes = {
-        "dilsharakrishan@gmail.com": "/users",          // Krishan  — User Management
-        "nethmimindula@gmail.com":   "/admin",           // Mindula  — admin.jsx
-        "pamudithajayasena@gmail.com": "/admindashboard",  // Pamuditha — AdminDashboard.jsx
+        "pamudithajayasena@gmail.com": "/admin-groups",
+        "krishandilshara@gmail.com": "/admin-goals",
+        "nethmimindula@gmail.com": "/resources-admin",
     };
-    return routes[email?.toLowerCase()] || "/home2"; // unmapped admins go to /home2
+    return routes[email?.toLowerCase()] || "/home2";
 };
 
 const Login = () => {
@@ -165,3 +165,4 @@ const Login = () => {
 };
 
 export default Login;
+

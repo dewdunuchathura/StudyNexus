@@ -1,469 +1,520 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Search, Filter, Eye, Trash2, Download, AlertTriangle, 
-  CheckCircle, XCircle, BarChart3, Users, FileText, 
-  TrendingUp, Calendar, Shield, Settings, LogOut, Menu, X,
-  LayoutDashboard, UsersRound, FileStack, Flag, Settings2
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  Bell,
+  CheckCircle,
+  Eye,
+  Filter,
+  Flag,
+  LayoutDashboard,
+  LogOut,
+  Search,
+  Settings,
+  Shield,
+  Trash2,
+  UserCircle2,
+  Users,
+  X,
 } from 'lucide-react';
 import AdminReports from './AdminReports';
 
-const AdminDashboard = () => {
-  // Sidebar state
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState('dashboard');
+const API_BASE = 'http://127.0.0.1:5000/api/groups';
+const MODERATION_STORAGE_KEY = 'group_admin_moderation';
 
-  // Data states
+const cardStyle = {
+  backgroundColor: '#FFFFFF',
+  border: '1px solid rgba(0, 48, 151, 0.12)',
+  borderRadius: '24px',
+  boxShadow: '0 12px 32px rgba(0, 48, 151, 0.08)',
+};
+
+const iconWrap = {
+  width: '52px',
+  height: '52px',
+  borderRadius: '16px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'rgba(0, 48, 151, 0.08)',
+  color: '#003097',
+};
+
+const loadModerationState = () => {
+  try {
+    return JSON.parse(localStorage.getItem(MODERATION_STORAGE_KEY) || '{}');
+  } catch {
+    return {};
+  }
+};
+
+const saveModerationState = (value) => {
+  localStorage.setItem(MODERATION_STORAGE_KEY, JSON.stringify(value));
+};
+
+const getGroupMeta = (group, moderationState) => {
+  const moderation = moderationState[group.id] || {};
+  const approved = moderation.approved ?? false;
+  const status = moderation.status || (approved ? 'active' : 'pending');
+
+  return {
+    approved,
+    status,
+    closeReason: moderation.closeReason || '',
+    closeDuration: moderation.closeDuration || '',
+  };
+};
+
+const statCards = [
+  { key: 'total', label: 'Total Groups', color: '#003097', icon: LayoutDashboard },
+  { key: 'active', label: 'Active Groups', color: '#10B981', icon: CheckCircle },
+  { key: 'pending', label: 'Pending Approval', color: '#F59E0B', icon: Flag },
+  { key: 'closed', label: 'Closed Groups', color: '#EF4444', icon: Trash2 },
+];
+
+export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [groups, setGroups] = useState([]);
-  const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Filter/Search states
+  const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
-  const [resourceCategory, setResourceCategory] = useState('All');
-  const [resourceStatus, setResourceStatus] = useState('All');
-
-  // Modal states
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showCloseModal, setShowCloseModal] = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [actionReason, setActionReason] = useState('');
+  const [duration, setDuration] = useState('');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [activeMenuItem, setActiveMenuItem] = useState('dashboard');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [moderationState, setModerationState] = useState(loadModerationState);
 
-  // ─── Data Fetching ──────────────────────────────────────────────
+  useEffect(() => {
+    saveModerationState(moderationState);
+  }, [moderationState]);
 
-  const fetchData = async () => {
-    setLoading(true);
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const response = await fetch(API_BASE);
+        const data = await response.json();
+
+        if (data.success) {
+          setGroups(Array.isArray(data.data) ? data.data : []);
+          setError('');
+        } else {
+          setError(data.message || 'Failed to fetch groups');
+        }
+      } catch (err) {
+        console.error('Error fetching groups:', err);
+        setError('Network error. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGroups();
+  }, []);
+
+  const enrichedGroups = useMemo(() => {
+    return groups.map((group) => ({ ...group, ...getGroupMeta(group, moderationState) }));
+  }, [groups, moderationState]);
+
+  const filtered = useMemo(() => {
+    return enrichedGroups.filter((group) => {
+      const matchesSearch =
+        group.name.toLowerCase().includes(search.toLowerCase()) ||
+        group.id.toLowerCase().includes(search.toLowerCase());
+
+      const matchesFilter =
+        filter === 'all' ||
+        (filter === 'pending' && !group.approved) ||
+        (filter === 'approved' && group.approved) ||
+        (filter === 'closed' && group.status === 'closed') ||
+        (filter === 'active' && group.status === 'active');
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [enrichedGroups, filter, search]);
+
+  const stats = useMemo(() => ({
+    total: enrichedGroups.length,
+    active: enrichedGroups.filter((group) => group.status === 'active').length,
+    pending: enrichedGroups.filter((group) => !group.approved).length,
+    closed: enrichedGroups.filter((group) => group.status === 'closed').length,
+    projects: enrichedGroups.filter((group) => group.category === 'project').length,
+    study: enrichedGroups.filter((group) => group.category === 'study').length,
+    discussion: enrichedGroups.filter((group) => group.category === 'discussion').length,
+  }), [enrichedGroups]);
+
+  const resetModalState = () => {
+    setSelectedGroup(null);
+    setActionReason('');
+    setDuration('');
+    setShowDeleteModal(false);
+    setShowCloseModal(false);
+    setShowApproveModal(false);
+  };
+
+  const handleDelete = async () => {
+    if (!selectedGroup || !actionReason.trim()) return;
+
     try {
-      // Fetch Groups
-      const groupRes = await fetch('http://localhost:5000/api/groups');
-      const groupData = await groupRes.json();
-      if (groupData.success) setGroups(groupData.data);
+      const response = await fetch(`${API_BASE}/${selectedGroup.id}`, { method: 'DELETE' });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Failed to delete group');
+      }
 
-      // Fetch Resources
-      const resourceRes = await fetch('http://localhost:5000/api/resources');
-      const resourceData = await resourceRes.json();
-      if (resourceData.success) setResources(resourceData.data);
-
-      setError(null);
+      setGroups((current) => current.filter((group) => group.id !== selectedGroup.id));
+      setModerationState((current) => {
+        const next = { ...current };
+        delete next[selectedGroup.id];
+        return next;
+      });
+      resetModalState();
+      alert('Group deleted successfully');
     } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      setError('Failed to load dashboard data. Please ensure the backend is running.');
-    } finally {
-      setLoading(false);
+      console.error('Delete group error:', err);
+      alert(err.message || 'Failed to delete group');
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const handleClose = () => {
+    if (!selectedGroup || !actionReason.trim() || !duration.trim()) return;
 
-  // ─── Handlers ───────────────────────────────────────────────────
+    setModerationState((current) => ({
+      ...current,
+      [selectedGroup.id]: {
+        ...(current[selectedGroup.id] || {}),
+        approved: true,
+        status: 'closed',
+        closeReason: actionReason,
+        closeDuration: duration,
+      },
+    }));
 
-  const handleApproveGroup = async (groupId) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/groups/${groupId}/approve`, { method: 'PATCH' });
-      if (res.ok) {
-        setGroups(groups.map(g => g.id === groupId ? { ...g, approved: true, status: 'active' } : g));
-        alert('Group approved successfully!');
-      }
-    } catch (err) { alert('Action failed'); }
+    resetModalState();
+    alert('Group closed temporarily');
   };
 
-  const handleApproveResource = async (resourceId) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/resources/${resourceId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'approved' })
-      });
-      if (res.ok) {
-        setResources(resources.map(r => r._id === resourceId ? { ...r, status: 'approved', reports: [] } : r));
-        alert('Resource approved!');
-      }
-    } catch (err) { alert('Action failed'); }
+  const handleApprove = () => {
+    if (!selectedGroup) return;
+
+    setModerationState((current) => ({
+      ...current,
+      [selectedGroup.id]: {
+        ...(current[selectedGroup.id] || {}),
+        approved: true,
+        status: 'active',
+      },
+    }));
+
+    resetModalState();
+    alert('Group approved successfully');
   };
 
-  const handleDeleteGroup = async (groupId) => {
-    if (!confirm('Are you sure you want to delete this group?')) return;
-    try {
-      const res = await fetch(`http://localhost:5000/api/groups/${groupId}`, { method: 'DELETE' });
-      if (res.ok) {
-        setGroups(groups.filter(g => g.id !== groupId));
-        alert('Group deleted');
-      }
-    } catch (err) { alert('Action failed'); }
+  const handleReopen = (groupId) => {
+    setModerationState((current) => ({
+      ...current,
+      [groupId]: {
+        ...(current[groupId] || {}),
+        approved: true,
+        status: 'active',
+        closeReason: '',
+        closeDuration: '',
+      },
+    }));
+
+    alert('Group reopened successfully');
   };
 
-  const handleDeleteResource = async (resourceId) => {
-    if (!confirm('Are you sure you want to delete this resource?')) return;
-    try {
-      const res = await fetch(`http://localhost:5000/api/resources/${resourceId}`, { method: 'DELETE' });
-      if (res.ok) {
-        setResources(resources.filter(r => r._id !== resourceId));
-        alert('Resource deleted');
-      }
-    } catch (err) { alert('Action failed'); }
-  };
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'groups', label: 'Groups', icon: Users },
+    { id: 'reports', label: 'Reports', icon: Flag },
+    { id: 'settings', label: 'Settings', icon: Settings },
+  ];
 
-  // ─── Filtered Data ──────────────────────────────────────────────
-
-  const filteredGroups = groups.filter(g => {
-    const matchesSearch = g.name.toLowerCase().includes(search.toLowerCase());
-    const matchesFilter = filter === 'all' || 
-                          (filter === 'pending' && !g.approved) ||
-                          (filter === 'active' && g.status === 'active');
-    return matchesSearch && matchesFilter;
-  });
-
-  const filteredResources = resources.filter(r => {
-    const matchesSearch = r.title.toLowerCase().includes(search.toLowerCase());
-    const matchesCat = resourceCategory === 'All' || r.category === resourceCategory;
-    const matchesStatus = resourceStatus === 'All' || r.status === resourceStatus;
-    return matchesSearch && matchesCat && matchesStatus;
-  });
-
-  // ─── Components ──────────────────────────────────────────────────
-
-  const StatCard = ({ title, value, sub, icon: Icon, color }) => (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between transition-all hover:shadow-md">
-      <div>
-        <p className="text-slate-500 text-sm font-medium uppercase tracking-wider mb-1">{title}</p>
-        <h4 className="text-3xl font-bold text-slate-900">{value}</h4>
-        <p className={`text-sm mt-1 ${color}`}>{sub}</p>
+  const renderDashboard = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+        {statCards.map((item) => {
+          const Icon = item.icon;
+          return (
+            <div key={item.key} style={{ ...cardStyle, padding: '28px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px' }}>
+                <div style={iconWrap}>
+                  <Icon size={24} />
+                </div>
+              </div>
+              <div style={{ fontSize: '14px', color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{item.label}</div>
+              <div style={{ marginTop: '12px', fontSize: '40px', fontWeight: 700, color: item.color }}>{stats[item.key]}</div>
+            </div>
+          );
+        })}
       </div>
-      <div className={`p-4 rounded-xl bg-opacity-10`} style={{ backgroundColor: color ? 'transparent' : '#f1f5f9' }}>
-        <Icon className={color || 'text-slate-400'} size={28} />
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(320px, 1fr)', gap: '20px' }}>
+        <div style={{ ...cardStyle, padding: '28px' }}>
+          <div style={{ fontSize: '28px', fontWeight: 700, color: '#003097', marginBottom: '20px' }}>Dashboard Overview</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+            {[
+              { label: 'Project Groups', value: stats.projects },
+              { label: 'Study Groups', value: stats.study },
+              { label: 'Discussion Groups', value: stats.discussion },
+            ].map((item) => (
+              <div key={item.label} style={{ backgroundColor: '#F0F9FF', borderRadius: '18px', padding: '20px' }}>
+                <div style={{ fontSize: '14px', color: '#6B7280' }}>{item.label}</div>
+                <div style={{ marginTop: '10px', fontSize: '32px', fontWeight: 700, color: '#003097' }}>{item.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ ...cardStyle, padding: '28px' }}>
+          <div style={{ fontSize: '28px', fontWeight: 700, color: '#003097', marginBottom: '20px' }}>Quick Actions</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <button onClick={() => setActiveMenuItem('groups')} style={{ padding: '16px 18px', borderRadius: '16px', border: 'none', backgroundColor: '#003097', color: '#FFFFFF', textAlign: 'left', fontSize: '16px', cursor: 'pointer' }}>Manage Groups</button>
+            <button onClick={() => setActiveMenuItem('reports')} style={{ padding: '16px 18px', borderRadius: '16px', border: 'none', backgroundColor: '#DBEAFE', color: '#003097', textAlign: 'left', fontSize: '16px', cursor: 'pointer' }}>Review Reports</button>
+            <button onClick={() => navigate('/create-group')} style={{ padding: '16px 18px', borderRadius: '16px', border: 'none', backgroundColor: '#F0F9FF', color: '#003097', textAlign: 'left', fontSize: '16px', cursor: 'pointer' }}>Open Create Group</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderGroups = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ ...cardStyle, padding: '24px' }}>
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', flex: '1 1 360px' }}>
+            <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280' }} />
+            <input
+              type="text"
+              placeholder="Search groups by name or ID..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              style={{ width: '100%', padding: '14px 16px 14px 46px', borderRadius: '14px', border: '1px solid #D1D5DB', outline: 'none', fontSize: '16px' }}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Filter size={18} color="#6B7280" />
+            <select value={filter} onChange={(event) => setFilter(event.target.value)} style={{ padding: '14px 16px', borderRadius: '14px', border: '1px solid #D1D5DB', outline: 'none', fontSize: '16px', minWidth: '200px' }}>
+              <option value="all">All Groups</option>
+              <option value="pending">Pending Approval</option>
+              <option value="approved">Approved</option>
+              <option value="active">Active</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ ...cardStyle, overflow: 'hidden' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead style={{ backgroundColor: '#F8FAFC', borderBottom: '1px solid #E5E7EB' }}>
+              <tr>
+                {['Group', 'ID', 'Category', 'Members', 'Status', 'Created', 'Actions'].map((label) => (
+                  <th key={label} style={{ padding: '18px 22px', textAlign: 'left', fontSize: '12px', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan="7" style={{ padding: '48px', textAlign: 'center', color: '#6B7280' }}>Loading groups...</td></tr>
+              ) : error ? (
+                <tr><td colSpan="7" style={{ padding: '48px', textAlign: 'center', color: '#DC2626' }}>{error}</td></tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan="7" style={{ padding: '48px', textAlign: 'center', color: '#6B7280' }}>No groups found</td></tr>
+              ) : (
+                filtered.map((group) => (
+                  <tr key={group.id} style={{ borderBottom: '1px solid #EEF2FF' }}>
+                    <td style={{ padding: '18px 22px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontWeight: 700, backgroundColor: group.leaderColor || '#3B82F6' }}>
+                          {group.leaderAv || group.name.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '16px', fontWeight: 600, color: '#111827' }}>{group.name}</div>
+                          <div style={{ fontSize: '13px', color: '#6B7280' }}>{group.leader || 'Leader'}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding: '18px 22px', fontSize: '15px', color: '#111827', fontFamily: 'monospace' }}>{group.id}</td>
+                    <td style={{ padding: '18px 22px' }}><span style={{ backgroundColor: '#DBEAFE', color: '#1D4ED8', padding: '8px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 600 }}>{group.category}</span></td>
+                    <td style={{ padding: '18px 22px', fontSize: '15px', color: '#111827' }}>{group.members}</td>
+                    <td style={{ padding: '18px 22px' }}>
+                      <span style={{ backgroundColor: !group.approved ? '#FEF3C7' : group.status === 'closed' ? '#FEE2E2' : '#DCFCE7', color: !group.approved ? '#92400E' : group.status === 'closed' ? '#991B1B' : '#166534', padding: '8px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 600 }}>
+                        {!group.approved ? 'Pending' : group.status === 'closed' ? 'Closed' : 'Active'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '18px 22px', fontSize: '15px', color: '#6B7280' }}>{group.createdAt ? new Date(group.createdAt).toLocaleDateString() : 'N/A'}</td>
+                    <td style={{ padding: '18px 22px' }}>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {!group.approved && <button onClick={() => { setSelectedGroup(group); setShowApproveModal(true); }} style={{ padding: '10px 14px', borderRadius: '12px', border: 'none', backgroundColor: '#059669', color: '#FFFFFF', cursor: 'pointer' }}>Approve</button>}
+                        {group.status === 'closed' && <button onClick={() => handleReopen(group.id)} style={{ padding: '10px 14px', borderRadius: '12px', border: 'none', backgroundColor: '#2563EB', color: '#FFFFFF', cursor: 'pointer' }}>Reopen</button>}
+                        {group.status === 'active' && <button onClick={() => { setSelectedGroup(group); setShowCloseModal(true); }} style={{ padding: '10px 14px', borderRadius: '12px', border: 'none', backgroundColor: '#4B5563', color: '#FFFFFF', cursor: 'pointer' }}>Close</button>}
+                        <button onClick={() => navigate(`/group/${group.id}`)} style={{ padding: '10px 14px', borderRadius: '12px', border: '1px solid #CBD5E1', backgroundColor: '#FFFFFF', color: '#334155', cursor: 'pointer' }}><Eye size={16} /></button>
+                        <button onClick={() => { setSelectedGroup(group); setShowDeleteModal(true); }} style={{ padding: '10px 14px', borderRadius: '12px', border: 'none', backgroundColor: '#DC2626', color: '#FFFFFF', cursor: 'pointer' }}><Trash2 size={16} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderModal = (title, description, primaryLabel, primaryAction, primaryDisabled, showDuration) => (
+    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '24px' }}>
+      <div style={{ ...cardStyle, width: '100%', maxWidth: '420px', padding: '24px' }}>
+        <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', marginBottom: '12px' }}>{title}</div>
+        <div style={{ fontSize: '15px', color: '#6B7280', lineHeight: 1.6, marginBottom: '18px' }}>{description}</div>
+        {(showDeleteModal || showCloseModal) && (
+          <textarea
+            placeholder={showDeleteModal ? 'Reason for deletion (required)' : 'Reason for closing (required)'}
+            value={actionReason}
+            onChange={(event) => setActionReason(event.target.value)}
+            rows={4}
+            style={{ width: '100%', padding: '12px 14px', borderRadius: '14px', border: '1px solid #CBD5E1', outline: 'none', resize: 'vertical', marginBottom: '14px' }}
+          />
+        )}
+        {showDuration && (
+          <input
+            type="text"
+            placeholder="Duration (e.g., 7 days, 2 weeks)"
+            value={duration}
+            onChange={(event) => setDuration(event.target.value)}
+            style={{ width: '100%', padding: '12px 14px', borderRadius: '14px', border: '1px solid #CBD5E1', outline: 'none', marginBottom: '14px' }}
+          />
+        )}
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={primaryAction} disabled={primaryDisabled} style={{ flex: 1, padding: '12px 16px', borderRadius: '14px', border: 'none', backgroundColor: primaryDisabled ? '#CBD5E1' : '#003097', color: '#FFFFFF', cursor: primaryDisabled ? 'not-allowed' : 'pointer' }}>{primaryLabel}</button>
+          <button onClick={resetModalState} style={{ flex: 1, padding: '12px 16px', borderRadius: '14px', border: 'none', backgroundColor: '#E5E7EB', color: '#374151', cursor: 'pointer' }}>Cancel</button>
+        </div>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen flex bg-slate-50 font-sans">
-      {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-72' : 'w-20'} bg-[#0f1b6b] text-white transition-all duration-300 flex flex-col fixed h-full z-50`}>
-        <div className="p-6 flex items-center gap-3 border-b border-white/10">
-          <div className="bg-blue-500 p-2 rounded-lg">
-            <Shield size={24} />
+    <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: '#F4F8FF', fontFamily: 'Inter, sans-serif' }}>
+      <aside style={{ width: sidebarCollapsed ? '92px' : '280px', backgroundColor: '#F0F9FF', borderRight: '1px solid rgba(0, 48, 151, 0.08)', display: 'flex', flexDirection: 'column', transition: 'width 0.3s ease' }}>
+        <div style={{ padding: '28px 24px', borderBottom: '1px solid #E5E7EB' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#003097', color: '#FFFFFF', boxShadow: '0 14px 24px rgba(0, 48, 151, 0.18)' }}>
+              <Shield size={30} />
+            </div>
+            {!sidebarCollapsed && (
+              <div>
+                <div style={{ fontSize: '24px', fontWeight: 700, color: '#003097' }}>EduNexus</div>
+                <div style={{ fontSize: '15px', color: '#6B7280' }}>group admin panel</div>
+              </div>
+            )}
           </div>
-          {sidebarOpen && <span className="text-xl font-bold tracking-tight">StudyNexus Admin</span>}
         </div>
 
-        <nav className="flex-1 p-4 space-y-2 mt-4">
-          {[
-            { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-            { id: 'groups', label: 'Groups', icon: UsersRound },
-            { id: 'resources', label: 'Resources', icon: FileStack },
-            { id: 'reports', label: 'Reports', icon: Flag },
-            { id: 'settings', label: 'Settings', icon: Settings2 },
-          ].map(item => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all ${
-                activeTab === item.id ? 'bg-blue-600 shadow-lg' : 'hover:bg-white/10 text-slate-300'
-              }`}
-            >
-              <item.icon size={22} />
-              {sidebarOpen && <span className="font-medium text-lg">{item.label}</span>}
-            </button>
-          ))}
-        </nav>
+        <div style={{ flex: 1, padding: '18px' }}>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active = activeMenuItem === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveMenuItem(item.id)}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '14px',
+                  padding: '14px 16px',
+                  marginBottom: '10px',
+                  borderRadius: '16px',
+                  border: 'none',
+                  backgroundColor: active ? '#003097' : 'transparent',
+                  color: active ? '#FFFFFF' : '#334155',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontSize: '18px',
+                  boxShadow: active ? '0 14px 24px rgba(0, 48, 151, 0.18)' : 'none',
+                }}
+              >
+                <Icon size={20} />
+                {!sidebarCollapsed && <span>{item.label}</span>}
+              </button>
+            );
+          })}
+        </div>
 
-        <div className="p-4 mt-auto">
-          <button className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-red-500/20 text-red-400 transition-all">
-            <LogOut size={22} />
-            {sidebarOpen && <span className="font-medium text-lg">Logout</span>}
+        <div style={{ padding: '18px', borderTop: '1px solid #E5E7EB' }}>
+          <button onClick={() => setSidebarCollapsed((current) => !current)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', marginBottom: '10px', borderRadius: '16px', border: 'none', backgroundColor: '#DBEAFE', color: '#003097', cursor: 'pointer', fontSize: '16px' }}>
+            {sidebarCollapsed ? <LayoutDashboard size={20} /> : <X size={20} />}
+            {!sidebarCollapsed && <span>{sidebarCollapsed ? 'Expand' : 'Collapse'}</span>}
           </button>
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '16px', backgroundColor: '#003097', color: '#FFFFFF', textDecoration: 'none', fontSize: '16px' }}>
+            <LogOut size={20} />
+            {!sidebarCollapsed && <span>Logout</span>}
+          </Link>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-72' : 'ml-20'}`}>
-        {/* Header */}
-        <header className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-40 flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-6">
-            <button 
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-600"
-            >
-              {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-            <h1 className="text-2xl font-bold text-slate-900 capitalize">{activeTab.replace('-', ' ')}</h1>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-sm font-semibold text-slate-900">Admin User</p>
-              <p className="text-xs text-slate-500">Super Administrator</p>
+      <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+        <header style={{ backgroundColor: '#003097', padding: '24px 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontSize: '32px', fontWeight: 700, color: '#FFFFFF' }}>
+              {activeMenuItem === 'dashboard' && 'Dashboard'}
+              {activeMenuItem === 'groups' && 'Groups Management'}
+              {activeMenuItem === 'reports' && 'Reports & Analytics'}
+              {activeMenuItem === 'settings' && 'System Settings'}
             </div>
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">A</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative' }}>
+            <button onClick={() => setShowNotifications((current) => !current)} style={{ width: '44px', height: '44px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.08)', color: '#FFFFFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Bell size={18} />
+            </button>
+            <button onClick={() => setShowProfileDropdown((current) => !current)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.08)', color: '#FFFFFF', cursor: 'pointer' }}>
+              <UserCircle2 size={22} />
+              <span>Admin</span>
+            </button>
+
+            {showNotifications && (
+              <div style={{ position: 'absolute', right: '72px', top: '58px', width: '260px', padding: '16px', backgroundColor: '#FFFFFF', borderRadius: '16px', boxShadow: '0 18px 36px rgba(15, 23, 42, 0.18)', border: '1px solid #E5E7EB' }}>
+                <div style={{ fontWeight: 700, color: '#003097', marginBottom: '8px' }}>Notifications</div>
+                <div style={{ fontSize: '14px', color: '#6B7280' }}>Group moderation alerts will appear here.</div>
+              </div>
+            )}
+
+            {showProfileDropdown && (
+              <div style={{ position: 'absolute', right: 0, top: '58px', width: '240px', padding: '10px', backgroundColor: '#FFFFFF', borderRadius: '16px', boxShadow: '0 18px 36px rgba(15, 23, 42, 0.18)', border: '1px solid #E5E7EB' }}>
+                <button onClick={() => navigate('/admin-groups')} style={{ width: '100%', padding: '12px 14px', border: 'none', backgroundColor: 'transparent', textAlign: 'left', borderRadius: '12px', cursor: 'pointer' }}>Group Admin Dashboard</button>
+                <button onClick={() => navigate('/resources-admin')} style={{ width: '100%', padding: '12px 14px', border: 'none', backgroundColor: 'transparent', textAlign: 'left', borderRadius: '12px', cursor: 'pointer' }}>Resources Admin</button>
+              </div>
+            )}
           </div>
         </header>
 
-        <div className="p-8">
-          {activeTab === 'dashboard' && (
-            <div className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Total Groups" value={groups.length} sub="↑ 12% increase" icon={UsersRound} color="text-blue-600" />
-                <StatCard title="Total Resources" value={resources.length} sub="↑ 8% increase" icon={FileStack} color="text-emerald-600" />
-                <StatCard title="Pending Review" value={groups.filter(g=>!g.approved).length + resources.filter(r=>r.status==='pending').length} sub="Action Required" icon={AlertTriangle} color="text-amber-600" />
-                <StatCard title="Active Members" value={groups.reduce((s,g)=>s+g.members,0)} sub="↑ 24% growth" icon={TrendingUp} color="text-indigo-600" />
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Recent Groups Card */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                  <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                    <h3 className="font-bold text-lg text-slate-900">Recent Groups</h3>
-                    <button onClick={()=>setActiveTab('groups')} className="text-blue-600 text-sm font-semibold hover:underline">View All</button>
-                  </div>
-                  <div className="divide-y divide-slate-100">
-                    {groups.slice(0, 5).map(group => (
-                      <div key={group.id} className="p-4 hover:bg-slate-50 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
-                            {group.name.slice(0,1)}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-slate-900">{group.name}</p>
-                            <p className="text-xs text-slate-500">{group.category} • {group.members} members</p>
-                          </div>
-                        </div>
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${group.approved ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                          {group.approved ? 'Active' : 'Pending'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Recent Resources Card */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                  <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                    <h3 className="font-bold text-lg text-slate-900">Recent Resources</h3>
-                    <button onClick={()=>setActiveTab('resources')} className="text-blue-600 text-sm font-semibold hover:underline">View All</button>
-                  </div>
-                  <div className="divide-y divide-slate-100">
-                    {resources.slice(0, 5).map(res => (
-                      <div key={res._id} className="p-4 hover:bg-slate-50 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
-                            <FileText size={18} />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-slate-900 truncate max-w-[200px]">{res.title}</p>
-                            <p className="text-xs text-slate-500">{res.author} • {res.category}</p>
-                          </div>
-                        </div>
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${res.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                          {res.status}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'groups' && (
-            <div className="space-y-6">
-              <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <div className="relative w-full md:w-96">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <input 
-                    type="text" 
-                    placeholder="Search groups..." 
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                  />
-                </div>
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                  <Filter className="text-slate-400" size={18} />
-                  <select 
-                    value={filter} 
-                    onChange={e => setFilter(e.target.value)}
-                    className="flex-1 md:w-48 py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-                  >
-                    <option value="all">All Groups</option>
-                    <option value="pending">Pending Approval</option>
-                    <option value="active">Active Only</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <table className="w-full text-left">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                      <th className="px-6 py-4 font-bold text-slate-700">Group</th>
-                      <th className="px-6 py-4 font-bold text-slate-700">Category</th>
-                      <th className="px-6 py-4 font-bold text-slate-700">Members</th>
-                      <th className="px-6 py-4 font-bold text-slate-700">Status</th>
-                      <th className="px-6 py-4 font-bold text-slate-700">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {filteredGroups.map(group => (
-                      <tr key={group.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-5">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
-                              {group.name.slice(0, 2).toUpperCase()}
-                            </div>
-                            <div>
-                              <p className="font-bold text-slate-900">{group.name}</p>
-                              <p className="text-xs text-slate-500">ID: {group.id}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-5 capitalize text-slate-600">{group.category}</td>
-                        <td className="px-6 py-5 font-medium text-slate-900">{group.members}</td>
-                        <td className="px-6 py-5">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                            group.approved ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                          }`}>
-                            {group.approved ? 'Approved' : 'Pending'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-5">
-                          <div className="flex gap-2">
-                            {!group.approved && (
-                              <button 
-                                onClick={() => handleApproveGroup(group.id)}
-                                className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition-all"
-                              >
-                                <CheckCircle size={18} />
-                              </button>
-                            )}
-                            <button 
-                              onClick={() => handleDeleteGroup(group.id)}
-                              className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-all"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'resources' && (
-            <div className="space-y-6">
-              <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <div className="relative w-full md:w-96">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <input 
-                    type="text" 
-                    placeholder="Search resources..." 
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                  />
-                </div>
-                <div className="flex gap-4 w-full md:w-auto">
-                  <select 
-                    value={resourceStatus} 
-                    onChange={e => setResourceStatus(e.target.value)}
-                    className="py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl outline-none"
-                  >
-                    <option value="All">All Status</option>
-                    <option value="approved">Approved</option>
-                    <option value="pending">Pending</option>
-                    <option value="reported">Reported</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <table className="w-full text-left">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                      <th className="px-6 py-4 font-bold text-slate-700">Resource</th>
-                      <th className="px-6 py-4 font-bold text-slate-700">Author</th>
-                      <th className="px-6 py-4 font-bold text-slate-700">Category</th>
-                      <th className="px-6 py-4 font-bold text-slate-700">Status</th>
-                      <th className="px-6 py-4 font-bold text-slate-700">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {filteredResources.map(res => (
-                      <tr key={res._id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-5">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
-                              <FileText size={24} />
-                            </div>
-                            <div>
-                              <p className="font-bold text-slate-900 truncate max-w-[250px]">{res.title}</p>
-                              <p className="text-xs text-slate-500 capitalize">{res.category} • {res.fileType}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-5 text-slate-600">{res.author}</td>
-                        <td className="px-6 py-5 font-medium text-slate-900">{res.category}</td>
-                        <td className="px-6 py-5">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                            res.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 
-                            res.status === 'reported' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
-                          }`}>
-                            {res.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-5">
-                          <div className="flex gap-2">
-                            {res.status !== 'approved' && (
-                              <button 
-                                onClick={() => handleApproveResource(res._id)}
-                                className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition-all"
-                              >
-                                <CheckCircle size={18} />
-                              </button>
-                            )}
-                            <button 
-                              onClick={() => handleDeleteResource(res._id)}
-                              className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-all"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'reports' && (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-              <AdminReports />
-            </div>
-          )}
-
-          {activeTab === 'settings' && (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center max-w-2xl mx-auto">
-              <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-400">
-                <Settings2 size={40} />
-              </div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">System Settings</h2>
-              <p className="text-slate-500 mb-8">Configure platform-wide settings, user roles, and security policies.</p>
-              <button className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-md">
-                Access Security Panel
-              </button>
+        <div style={{ padding: '28px', overflowY: 'auto', flex: 1 }}>
+          {activeMenuItem === 'dashboard' && renderDashboard()}
+          {activeMenuItem === 'groups' && renderGroups()}
+          {activeMenuItem === 'reports' && <div style={{ ...cardStyle, padding: '24px' }}><AdminReports /></div>}
+          {activeMenuItem === 'settings' && (
+            <div style={{ ...cardStyle, padding: '40px', textAlign: 'center' }}>
+              <div style={{ ...iconWrap, margin: '0 auto 18px', width: '72px', height: '72px' }}><Settings size={34} /></div>
+              <div style={{ fontSize: '28px', fontWeight: 700, color: '#111827', marginBottom: '10px' }}>Settings</div>
+              <div style={{ fontSize: '16px', color: '#6B7280' }}>Configure system settings</div>
             </div>
           )}
         </div>
       </main>
+
+      {showDeleteModal && selectedGroup && renderModal('Delete Group', `Are you sure you want to delete "${selectedGroup.name}"? This action cannot be undone.`, 'Delete', handleDelete, !actionReason.trim(), false)}
+      {showCloseModal && selectedGroup && renderModal('Close Group', `Temporarily close "${selectedGroup.name}". Members will not be able to access the group.`, 'Close', handleClose, !actionReason.trim() || !duration.trim(), true)}
+      {showApproveModal && selectedGroup && renderModal('Approve Group', `Approve "${selectedGroup.name}"? This will make the group active and visible to all users.`, 'Approve', handleApprove, false, false)}
     </div>
   );
-};
-
-export default AdminDashboard;
+}

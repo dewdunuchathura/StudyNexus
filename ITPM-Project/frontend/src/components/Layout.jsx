@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import Header from "./Header";
+import Sidebar from "./Sidebar";
 import { useAuth } from "../context/AuthContext";
 import "./Layout.css";
 
@@ -9,6 +10,8 @@ const Layout = ({ children }) => {
 
     // Do not show the navigation header on landing page, login, or register
     const isAuthPage = ["/login", "/register", "/"].includes(location.pathname);
+    const sidebarRoutes = ["/dashboard", "/leaderboard", "/users", "/admin-goals"];
+    const usesSidebarLayout = user && sidebarRoutes.includes(location.pathname);
 
     // If it's a public/auth page, just render children (the page handles its own layout)
     if (isAuthPage) {
@@ -17,9 +20,9 @@ const Layout = ({ children }) => {
 
     return (
         <div className="layout-root layout-root--authenticated">
-            {user && <Header />}
-            <div className="layout-content">
-                <main className="layout-main">
+            {usesSidebarLayout ? <Sidebar /> : user ? <Header /> : null}
+            <div className={`layout-content${usesSidebarLayout ? " layout-content--with-sidebar" : ""}`}>
+                <main className={`layout-main${usesSidebarLayout ? " layout-main--with-sidebar" : ""}`}>
                     {children}
                 </main>
             </div>

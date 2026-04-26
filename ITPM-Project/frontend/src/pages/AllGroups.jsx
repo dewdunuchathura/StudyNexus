@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { isGroupJoined } from '../utils/groupMembership'
 
 // ─── Constants (same rules as CreateGroup.jsx) ───────────────────────────────
 const PREFIXES = ['it', 'bm', 'hs', 'en']
@@ -522,7 +524,7 @@ function MemberRow({ m }) {
 }
 
 // ─── Group card ───────────────────────────────────────────────────────────────
-function GroupCard({ group, onOpen }) {
+function GroupCard({ group, onOpen, joined }) {
   const cat = CAT_STYLES[group.category]
 
   return (
@@ -616,7 +618,7 @@ function GroupCard({ group, onOpen }) {
             <button
               className="text-sm font-bold px-4 py-2 rounded-lg transition-all bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 hover:from-blue-600 hover:to-indigo-600 hover:text-white hover:shadow-lg hover:scale-105 duration-300"
             >
-              Open
+              {joined ? 'Open' : 'Join Group'}
             </button>
           </div>
         </div>
@@ -628,6 +630,7 @@ function GroupCard({ group, onOpen }) {
 // ─── Main AllGroups page ──────────────────────────────────────────────────────
 export default function AllGroups() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [groups, setGroups] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -704,7 +707,7 @@ export default function AllGroups() {
                 New Group
               </Link>
               <Link
-                to="/groupjoined"
+                to="/group-joined"
                 className="flex items-center gap-3 text-white text-xl font-semibold px-8 py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
                 style={{ backgroundColor: '#4FC3F7', fontFamily: 'Inter, sans-serif' }}
               >
@@ -810,7 +813,8 @@ export default function AllGroups() {
               <GroupCard
                 key={g.id}
                 group={g}
-                onOpen={grp => navigate(`/group-joined/${grp.id}`)}
+                joined={isGroupJoined(user, g.id)}
+                onOpen={grp => navigate(isGroupJoined(user, grp.id) ? `/group-joined/${grp.id}` : `/group/${grp.id}`)}
               />
             ))}
           </div>

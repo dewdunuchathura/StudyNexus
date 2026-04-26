@@ -4,11 +4,32 @@ import {
     Search, Edit, Trash2, Shield, Plus, X
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import apiClient, { getErrorMessage, getPayload } from "../services/apiClient";
+import apiClient, { getErrorMessage, getPayload, setAuthToken } from "../services/apiClient";
 import "./Dashboard.css";       /* stat-card, page-header, modal styles */
 import "./UserManagement.css";
 
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+const normalizeUser = (user = {}) => ({
+    ...user,
+    _id: user._id || user.id,
+    firstName: user.firstName || user.first_name || "",
+    lastName: user.lastName || user.last_name || "",
+    email: user.email || "",
+    role: user.role || "student",
+    status: user.status || "Active",
+    createdAt: user.createdAt || user.created_at || null,
+});
+
+const normalizeLeaderboardStudent = (student = {}) => ({
+    _id: student._id || student.userId || student.email,
+    firstName: student.firstName || "",
+    lastName: student.lastName || "",
+    email: student.email || "",
+    role: student.role || "student",
+    status: "Active",
+    createdAt: null,
+});
 
 const UserManagement = () => {
     const { user: currentUser } = useAuth();
@@ -29,15 +50,77 @@ const UserManagement = () => {
         role: "student", status: "Active", password: ""
     });
 
-    useEffect(() => { fetchUsers(); }, []);
+    useEffect(() => {
+        if (currentUser?.email) {
+            fetchUsers();
+        }
+    }, [currentUser?.email]);
 
-    const fetchUsers = async () => {
+    const fetchUsers = async (retryCount = 0) => {
         setLoading(true);
         try {
-            const response = await apiClient.get("/user");
-            setUsers(getPayload(response));
+            const storedToken = localStorage.getItem("token");
+            if (storedToken) {
+                setAuthToken(storedToken);
+            }
+            const [usersResult, leaderboardResult] = await Promise.allSettled([
+                apiClient.get("/api/users"),
+                apiClient.get("/api/goals/leaderboard"),
+            ]);
+
+            const dbUsers = usersResult.status === "fulfilled"
+                ? getPayload(usersResult.value)
+                : [];
+            const leaderboardStudents = leaderboardResult.status === "fulfilled"
+                ? getPayload(leaderboardResult.value)
+                : [];
+
+            const mergedUsers = new Map();
+
+            if (Array.isArray(dbUsers)) {
+                dbUsers.map(normalizeUser).forEach((user) => {
+                    const key = user._id || user.email;
+                    if (key) mergedUsers.set(key, user);
+                });
+            }
+
+            if (Array.isArray(leaderboardStudents)) {
+                leaderboardStudents
+                    .map(normalizeLeaderboardStudent)
+                    .forEach((student) => {
+                        const existingByEmail = Array.from(mergedUsers.entries()).find(
+                            ([, user]) => user.email && user.email === student.email
+                        );
+
+                        if (existingByEmail) {
+                            const [existingKey, existingUser] = existingByEmail;
+                            mergedUsers.set(existingKey, {
+                                ...student,
+                                ...existingUser,
+                            });
+                            return;
+                        }
+
+                        const key = student._id || student.email;
+                        if (key) mergedUsers.set(key, student);
+                    });
+            }
+
+            const nextUsers = Array.from(mergedUsers.values());
+            const hasAdmins = nextUsers.some((user) => user.role === "admin");
+
+            if (!hasAdmins && retryCount < 1 && currentUser?.role === "admin") {
+                setTimeout(() => fetchUsers(retryCount + 1), 700);
+            }
+
+            setUsers(nextUsers);
         } catch (err) {
             console.error(err);
+            if (retryCount < 1 && currentUser?.role === "admin") {
+                setTimeout(() => fetchUsers(retryCount + 1), 700);
+                return;
+            }
+            setUsers([]);
         } finally {
             setLoading(false);
         }
@@ -90,18 +173,18 @@ const UserManagement = () => {
             if (editingUser) {
                 // PUT /user/:id  — update existing
                 const response = await apiClient.put(
-                    `/user/${editingUser._id}`,
+                    `/api/users/${editingUser._id}`,
                     formData
                 );
                 const payload = getPayload(response);
                 setUsers(prev => prev.map(u =>
-                    u._id === editingUser._id ? payload.user : u
+                    u._id === editingUser._id ? normalizeUser(payload.user) : u
                 ));
                 setFormSuccess("User updated successfully.");
                 setTimeout(() => setIsModalOpen(false), 900);
             } else {
-                // POST /user/add  — create new user with password hashing on backend
-                const response = await apiClient.post("/user/add", formData);
+                // POST /api/users/add  — create new user with password hashing on backend
+                const response = await apiClient.post("/api/users/add", formData);
                 const payload = getPayload(response);
                 setFormSuccess(payload.message || "User added successfully.");
                 fetchUsers();
@@ -117,7 +200,7 @@ const UserManagement = () => {
 
     const handleDeleteUser = async (id) => {
         try {
-            await apiClient.delete(`/user/${id}`);
+            await apiClient.delete(`/api/users/${id}`);
             setUsers(prev => prev.filter(u => u._id !== id));
         } catch (err) {
             alert(getErrorMessage(err, "Error deleting user."));
@@ -491,3 +574,4 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
+

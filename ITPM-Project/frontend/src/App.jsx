@@ -117,6 +117,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/group-joined"
+                element={
+                  <ProtectedRoute>
+                    <GroupJoined />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Mindula — Academic Resources (accessible to all logged users) */}
               <Route
@@ -149,23 +157,34 @@ function App() {
               />
 
               <Route
-                path="/admin"
+                path="/resources-admin"
                 element={
-                  <RoleProtectedRoute allowedRoles={["admin", "lecturer"]}>
+                  <ProtectedRoute>
                     <Admin />
-                  </RoleProtectedRoute>
+                  </ProtectedRoute>
                 }
               />
+              <Route path="/admin" element={<Navigate to="/resources-admin" replace />} />
 
               <Route
-                path="/admindashboard"
+                path="/admin-groups"
                 element={
-                  <RoleProtectedRoute allowedRoles={["admin", "lecturer"]}>
+                  <ProtectedRoute>
                     <AdminDashboard />
-                  </RoleProtectedRoute>
+                  </ProtectedRoute>
                 }
               />
-              <Route path="/admin-dashboard" element={<Navigate to="/admindashboard" replace />} />
+              <Route path="/admindashboard" element={<Navigate to="/admin-groups" replace />} />
+              <Route path="/admin-dashboard" element={<Navigate to="/admin-groups" replace />} />
+
+              <Route
+                path="/admin-goals"
+                element={
+                  <ProtectedRoute>
+                    <UserManagement />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Dewdunu — AI Feature Pages */}
               <Route
@@ -212,3 +231,4 @@ function App() {
 }
 
 export default App;
+
